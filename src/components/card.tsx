@@ -1,24 +1,36 @@
 import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHandFist, faHeart, faPaw } from "@fortawesome/free-solid-svg-icons";
+import { CardType } from "src/cardLibrary";
 
-type CardProps = {
-  title: string;
-  attack: number;
-  health: number;
-};
-
-const Card = ({ title, attack, health }: CardProps): JSX.Element => {
+const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   return (
     <Container>
-      <Title>{title}</Title>
-
+      <Title>{name}</Title>
+      <CenterPanel>
+        <Icon>
+          <FontAwesomeIcon icon={icon ? icon : faPaw} />
+        </Icon>
+      </CenterPanel>
       <Footer>
-        <Stat>{attack}</Stat>
-        <Stat>{health}</Stat>
+        <Stat>
+          <StatIcon>
+            <FontAwesomeIcon icon={faHandFist} />
+          </StatIcon>
+          <StatVal>{attack}</StatVal>
+        </Stat>
+        <Stat>
+          <StatIcon>
+            <FontAwesomeIcon icon={faHeart} />
+          </StatIcon>
+          <StatVal>{health}</StatVal>
+        </Stat>
       </Footer>
     </Container>
   );
 };
 
+const border = "1px solid #eee";
 const Container = styled.div`
   border: 1px solid #999;
   width: 100px;
@@ -34,18 +46,37 @@ const Container = styled.div`
 const Title = styled.div`
   text-align: center;
   padding: 5px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: ${border};
 `;
-const Footer = styled.div`
+
+const CenterPanel = styled.div`
   flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+`;
+const Icon = styled.div`
+  width: 50px;
+`;
+
+const Footer = styled.div`
   display: flex;
   align-items: flex-end;
   padding: 5px;
   justify-content: space-between;
+  border-top: ${border};
 `;
 const Stat = styled.div`
-  padding: 10px;
+  padding: 5px;
+  display: flex;
+  flex-direction: row;
   font-weight: bold;
+`;
+const StatVal = styled.div`
+  padding-left: 5px;
+`;
+const StatIcon = styled.div`
+  width: 12px;
 `;
 
 export default Card;
