@@ -3,11 +3,13 @@ import { useImmerReducer } from "use-immer";
 import _ from "lodash";
 
 import DisplayCards from "src/components/DisplayCards";
+import DisplayBoardRow, {BoardRowType} from "src/components/DisplayBoardRow"
 import cardLibrary, { CardType } from "src/cardLibrary";
 
 type CardsType = {
   hand: Array<CardType>;
   drawPile: Array<CardType>;
+  playerBoard: BoardRowType;
 };
 
 type ActionType = {
@@ -42,11 +44,14 @@ const initialCards: CardsType = {
   // NOTE: could make the randomness of shuffle based on a seed
   // so games are repeatable
   drawPile: _.shuffle(_.cloneDeep(deck)),
+  playerBoard: [null, null, null, null],
 };
 
 const Game = () => {
   const [cards, dispatch] = useImmerReducer(cardsReducer, initialCards);
   console.log(cards);
+
+  const opponentBoard: BoardRowType = [null, null, null, null];
 
   const drawCard = () => {
     dispatch({ type: "drew" });
@@ -55,7 +60,8 @@ const Game = () => {
   return (
     <Container>
       <h1>Board:</h1>
-
+      <DisplayBoardRow cards={opponentBoard} />
+      <DisplayBoardRow cards={cards.playerBoard} />
 
       <h1>Hand:</h1>
       <DisplayCards cards={cards.hand} />

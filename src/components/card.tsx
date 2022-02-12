@@ -33,9 +33,16 @@ const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   );
 };
 
+export const EmptyCardSlot = () => {
+  return <Container empty={true}/>;
+}
+
 const border = "2px solid #ddd";
-const Container = styled.div`
-  border: 1px solid #999;
+type ContainerProps = {
+  empty?: boolean;
+}
+
+const Container = styled.div<ContainerProps>`
   width: 100px;
   height: 150px;
   border-radius: 10px;
@@ -44,7 +51,11 @@ const Container = styled.div`
   justify-content: stretch;
   align-items: stretch;
   font-size: 20px;
-  background: #f3f3f3;
+  
+  zoom: 80%; 
+
+  border: 1px solid ${props => props.empty ? "#ddd" : "#999"};
+  background: ${props => props.empty ? "#fff" : "#f3f3f3"};
 `;
 
 const Title = styled.div`
