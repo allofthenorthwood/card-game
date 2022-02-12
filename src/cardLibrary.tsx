@@ -1,6 +1,4 @@
 import {
-  faHandFist,
-  faHeart,
   faFrog,
   faCat,
   faOtter,
@@ -11,7 +9,6 @@ import {
   faHippo,
   faFish,
   faHorse,
-  faPaw,
 } from "@fortawesome/free-solid-svg-icons";
 
 export type CardType = {
@@ -19,19 +16,6 @@ export type CardType = {
   health: number;
   attack: number;
   icon?: any; //todo
-};
-
-const cardIcons = {
-  frog: faFrog,
-  crow: faCrow,
-  dog: faDog,
-  cat: faCat,
-  otter: faOtter,
-  hippo: faHippo,
-  horse: faHorse,
-  fish: faFish,
-  dragon: faDragon,
-  dove: faDove,
 };
 
 const cardLibrary: { [cardId: string]: CardType } = {
@@ -44,12 +28,6 @@ const cardLibrary: { [cardId: string]: CardType } = {
   },
   dog: {
     name: "Watch Dog",
-    attack: 2,
-    health: 3,
-    icon: faDog,
-  },
-  bigDog: {
-    name: "A very long dog name",
     attack: 2,
     health: 3,
     icon: faDog,

@@ -33,7 +33,7 @@ const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   );
 };
 
-const border = "1px solid #eee";
+const border = "2px solid #ddd";
 const Container = styled.div`
   border: 1px solid #999;
   width: 100px;
@@ -44,6 +44,7 @@ const Container = styled.div`
   justify-content: stretch;
   align-items: stretch;
   font-size: 20px;
+  background: #f3f3f3;
 `;
 
 const Title = styled.div`
@@ -59,13 +60,13 @@ const CenterPanel = styled.div`
   display: flex;
 `;
 const Icon = styled.div`
-  font-size: 40px;
+  font-size: 50px;
 `;
 
 const Footer = styled.div`
   display: flex;
   align-items: flex-end;
-  padding: 5px;
+  padding: 0 5px;
   justify-content: space-between;
   border-top: ${border};
 `;
