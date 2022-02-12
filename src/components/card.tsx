@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandFist, faHeart, faPaw } from "@fortawesome/free-solid-svg-icons";
 import { CardType } from "src/cardLibrary";
 import ResizeText from "src/components/ResizeText";
+import styleVars from "src/styleVars";
 
 const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   return (
@@ -34,28 +35,29 @@ const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
 };
 
 export const EmptyCardSlot = () => {
-  return <Container empty={true}/>;
-}
+  return <Container empty={true} />;
+};
 
 const border = "2px solid #ddd";
 type ContainerProps = {
   empty?: boolean;
-}
+};
 
 const Container = styled.div<ContainerProps>`
   width: 100px;
   height: 150px;
-  border-radius: 10px;
+
+  border-radius: ${styleVars.borderRadius}px;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
   align-items: stretch;
   font-size: 20px;
 
-  zoom: 80%; 
+  zoom: 80%;
 
-  border: 1px solid ${props => props.empty ? "#ddd" : "#999"};
-  background: ${props => props.empty ? "#fff" : "#f3f3f3"};
+  border: 1px solid ${(props) => (props.empty ? "#ddd" : "#999")};
+  background: ${(props) => (props.empty ? "#fff" : "#f3f3f3")};
 `;
 
 const Title = styled.div`

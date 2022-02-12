@@ -17,6 +17,12 @@ const Button = styled.button`
   display: block;
   cursor: pointer;
   font: inherit;
+  color: inherit;
+  text-decoration: inherit;
+  text-align: inherit;
+  &:disabled {
+    cursor: default;
+  }
 `;
 
 export default UnstyledButton;

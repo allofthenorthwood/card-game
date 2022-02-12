@@ -20,12 +20,12 @@ const DisplayBoardRow = ({
           <div key={slot}>
             {card ? (
               <Card {...card} key={slot} />
-            ) : (
-              <UnstyledButton
-                onClick={() => (playCard ? playCard(slot) : null)}
-              >
+            ) : playCard ? (
+              <UnstyledButton onClick={() => playCard(slot)}>
                 <EmptyCardSlot />
               </UnstyledButton>
+            ) : (
+              <EmptyCardSlot />
             )}
           </div>
         );
