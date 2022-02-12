@@ -1,28 +1,34 @@
 import styled from "styled-components";
-import Card, {EmptyCardSlot} from "src/components/Card";
+import Card, { EmptyCardSlot } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
-import { createReadStream } from "fs";
-
-// TODO: move to helper file
-type Tuple<T, N extends number> = N extends N
-  ? number extends N
-    ? T[]
-    : _TupleOf<T, N, []>
-  : never;
-type _TupleOf<T, N extends number, R extends unknown[]> = R["length"] extends N
-  ? R
-  : _TupleOf<T, N, [T, ...R]>;
+import { Tuple } from "src/types";
+import UnstyledButton from "src/components/UnstyledButton";
 
 export type BoardRowType = Tuple<CardType | null, 4>;
 
-const DisplayBoardRow = ({ cards }: { cards: BoardRowType }) => {
+const DisplayBoardRow = ({
+  cards,
+  playCard,
+}: {
+  cards: BoardRowType;
+  playCard?(slot: number): void;
+}) => {
   return (
     <CardsContainer>
-      {cards.map((card) => {
-        if (card) {
-          return <Card {...card}/>
-        }
-        return <EmptyCardSlot/>
+      {cards.map((card, slot) => {
+        return (
+          <div key={slot}>
+            {card ? (
+              <Card {...card} key={slot} />
+            ) : (
+              <UnstyledButton
+                onClick={() => (playCard ? playCard(slot) : null)}
+              >
+                <EmptyCardSlot />
+              </UnstyledButton>
+            )}
+          </div>
+        );
       })}
     </CardsContainer>
   );

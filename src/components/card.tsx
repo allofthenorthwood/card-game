@@ -51,7 +51,7 @@ const Container = styled.div<ContainerProps>`
   justify-content: stretch;
   align-items: stretch;
   font-size: 20px;
-  
+
   zoom: 80%; 
 
   border: 1px solid ${props => props.empty ? "#ddd" : "#999"};
