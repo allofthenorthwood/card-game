@@ -59,7 +59,7 @@ const CenterPanel = styled.div`
   display: flex;
 `;
 const Icon = styled.div`
-  width: 50px;
+  font-size: 40px;
 `;
 
 const Footer = styled.div`
@@ -74,12 +74,13 @@ const Stat = styled.div`
   display: flex;
   flex-direction: row;
   font-weight: bold;
+  align-items: center;
 `;
 const StatVal = styled.div`
-  padding-left: 5px;
+  padding-left: 4px;
 `;
 const StatIcon = styled.div`
-  width: 12px;
+  font-size: 16px;
 `;
 
 export default Card;
