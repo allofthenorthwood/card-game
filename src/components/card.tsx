@@ -2,11 +2,14 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandFist, faHeart, faPaw } from "@fortawesome/free-solid-svg-icons";
 import { CardType } from "src/cardLibrary";
+import ResizeText from "src/components/ResizeText";
 
 const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   return (
     <Container>
-      <Title>{name}</Title>
+      <Title>
+        <ResizeText maxFontSize={24}>{name}</ResizeText>
+      </Title>
       <CenterPanel>
         <Icon>
           <FontAwesomeIcon icon={icon ? icon : faPaw} />

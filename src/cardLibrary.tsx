@@ -48,6 +48,12 @@ const cardLibrary: { [cardId: string]: CardType } = {
     health: 3,
     icon: faDog,
   },
+  bigDog: {
+    name: "A very long dog name",
+    attack: 2,
+    health: 3,
+    icon: faDog,
+  },
 };
 
 export default cardLibrary;
