@@ -1,18 +1,24 @@
 import styled from "styled-components";
 import { useImmerReducer } from "use-immer";
 import { useState } from "react";
-import _ from "lodash";
+import _, { delay } from "lodash";
 
 import DisplayCards from "src/components/DisplayCards";
 import DisplayHand from "src/components/DisplayHand";
 import DisplayBoardRow, { BoardRowType } from "src/components/DisplayBoardRow";
 import cardLibrary, { CardType } from "src/cardLibrary";
 
-type CardsType = {
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((res) => setTimeout(res, delayMs));
+}
+
+type GameStateType = {
   hand: Array<CardType>;
   drawPile: Array<CardType>;
   playerBoard: BoardRowType;
   opponentBoard: BoardRowType;
+  playerScore: number;
+  opponentScore: number;
 };
 
 type ActionType =
@@ -37,54 +43,62 @@ const deck = [
   { ...cardLibrary.frog },
 ];
 
-const cardsReducer = (cards: CardsType, action: ActionType) => {
+const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
   switch (action.type) {
     case "draw_card": {
       // move card from draw pile to hand
-      const card = cards.drawPile.pop();
+      const card = gameState.drawPile.pop();
       if (card) {
-        cards.hand.push(card);
+        gameState.hand.push(card);
       }
-      return cards;
+      return gameState;
     }
     case "play_card": {
       const handIdx = action.handIdx;
       const boardIdx = action.boardIdx;
       const playable =
         handIdx >= 0 &&
-        handIdx < cards.hand.length &&
+        handIdx < gameState.hand.length &&
         boardIdx >= 0 &&
-        boardIdx < cards.playerBoard.length;
+        boardIdx < gameState.playerBoard.length;
       if (playable) {
-        const [card] = cards.hand.splice(handIdx, 1);
-        cards.playerBoard[boardIdx] = card;
+        const [card] = gameState.hand.splice(handIdx, 1);
+        gameState.playerBoard[boardIdx] = card;
       }
-      return cards;
+      return gameState;
     }
     case "attack": {
       const idx = action.idx;
       let attackerCards = null;
       let victimCards = null;
       if (action.attacker === "player") {
-        attackerCards = cards.playerBoard;
-        victimCards = cards.opponentBoard;
+        attackerCards = gameState.playerBoard;
+        victimCards = gameState.opponentBoard;
       } else {
-        attackerCards = cards.opponentBoard;
-        victimCards = cards.playerBoard;
+        attackerCards = gameState.opponentBoard;
+        victimCards = gameState.playerBoard;
       }
 
       // TODO: bifurcated strikes
       const attackerCard = attackerCards[idx];
       const victimCard = victimCards[idx];
-      if (attackerCard != null && victimCard != null) {
-        victimCard.health -= attackerCard.attack;
-        if (victimCard.health <= 0) {
-          // Remove victim cards with zero health
-          victimCards[idx] = null;
+      if (attackerCard != null) {
+        if (victimCard != null) {
+          victimCard.health -= attackerCard.attack;
+          if (victimCard.health <= 0) {
+            // Remove victim cards with zero health
+            victimCards[idx] = null;
+          }
+        } else {
+          if (action.attacker === "player") {
+            gameState.playerScore += attackerCard.attack;
+          } else {
+            gameState.opponentScore += attackerCard.attack;
+          }
         }
       }
 
-      return cards;
+      return gameState;
     }
     default: {
       throw Error("Unknown action.");
@@ -92,21 +106,25 @@ const cardsReducer = (cards: CardsType, action: ActionType) => {
   }
 };
 
-const initialCards: CardsType = {
+const initialGameState: GameStateType = {
   hand: [],
   // NOTE: could make the randomness of shuffle based on a seed
   // so games are repeatable
   drawPile: _.shuffle(_.cloneDeep(deck)),
   playerBoard: [cardLibrary.dog, null, null, null],
   opponentBoard: [null, cardLibrary.frog, null, null],
+  playerScore: 0,
+  opponentScore: 0,
 };
 
 const Game = () => {
-  const [cards, dispatch] = useImmerReducer(cardsReducer, initialCards);
+  const [gameState, dispatch] = useImmerReducer(
+    gameStateReducer,
+    initialGameState
+  );
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  // TODO: set/unset this based on whether the animations are still playing
   const [playerTurn, setPlayerTurn] = useState(true);
-  const [playerScore, setPlayerScore] = useState(0);
-  const [opponentScore, setOpponentScore] = useState(0);
 
   const drawCard = () => {
     dispatch({ type: "draw_card" });
@@ -122,58 +140,53 @@ const Game = () => {
     setSelectedCard(cardIdx);
   };
 
-  const attack = (
+  const attack = async (
     attackerCards: BoardRowType,
-    victimCards: BoardRowType,
     direction: "player" | "opponent"
   ) => {
-    attackerCards.forEach((card, idx) => {
+    for (let i = 0; i < attackerCards.length; i++) {
+      let card = attackerCards[i];
       if (card != null) {
-        // TODO: bifurcated strikes
-        let victimCard = cards.opponentBoard[idx];
-        if (!victimCard) {
-          setPlayerScore((score) => score + card.attack);
-        } else {
-          dispatch({ type: "attack", idx: idx, attacker: "player" });
-        }
+        dispatch({ type: "attack", idx: i, attacker: direction });
+        await sleep(100);
       }
-    });
+    }
   };
-  const endTurn = () => {
+  const endTurn = async () => {
     // setPlayerTurn(false); while the animations play out
 
-    // TODO: make sure these happen in series!
     // Player Attacks
-    attack(cards.playerBoard, cards.opponentBoard, "player");
+    attack(gameState.playerBoard, "player");
+    await sleep(100);
     // Opponent Attacks
-    //attack(cards.opponentBoard, cards.playerBoard, "opponent");
+    attack(gameState.opponentBoard, "opponent");
   };
 
   return (
     <Container>
       <h1>Score:</h1>
       <div>
-        Player: {playerScore} | Opponent: {opponentScore}
+        Player: {gameState.playerScore} | Opponent: {gameState.opponentScore}
       </div>
       <h1>Board:</h1>
       <button onClick={endTurn}>End Turn</button>
-      <DisplayBoardRow cards={cards.opponentBoard} />
+      <DisplayBoardRow cards={gameState.opponentBoard} />
       <DisplayBoardRow
-        cards={cards.playerBoard}
+        cards={gameState.playerBoard}
         playCard={playCard}
         activeCardSlot={null}
       />
 
       <h1>Hand:</h1>
       <DisplayHand
-        cards={cards.hand}
+        cards={gameState.hand}
         selected={selectedCard}
         onSelect={onSelect}
       />
       <button onClick={drawCard}>Draw Card</button>
 
       <h1>Draw Pile:</h1>
-      <DisplayCards cards={cards.drawPile} />
+      <DisplayCards cards={gameState.drawPile} />
 
       <h1>Deck:</h1>
       <DisplayCards cards={deck} />
