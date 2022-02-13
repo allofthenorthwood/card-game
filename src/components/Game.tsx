@@ -15,11 +15,20 @@ type CardsType = {
   opponentBoard: BoardRowType;
 };
 
-type ActionType = {
-  type: string;
-  handIdx?: number;
-  boardIdx?: number;
-};
+type ActionType =
+  | {
+      type: "draw_card";
+    }
+  | {
+      type: "play_card";
+      handIdx: number;
+      boardIdx: number;
+    }
+  | {
+      type: "attack";
+      idx: number;
+      attacker: "player" | "opponent";
+    };
 
 // TODO: make deck for real
 const deck = [
@@ -42,10 +51,8 @@ const cardsReducer = (cards: CardsType, action: ActionType) => {
       const handIdx = action.handIdx;
       const boardIdx = action.boardIdx;
       const playable =
-        handIdx != null &&
         handIdx >= 0 &&
         handIdx < cards.hand.length &&
-        boardIdx != null &&
         boardIdx >= 0 &&
         boardIdx < cards.playerBoard.length;
       if (playable) {
@@ -54,8 +61,33 @@ const cardsReducer = (cards: CardsType, action: ActionType) => {
       }
       return cards;
     }
+    case "attack": {
+      const idx = action.idx;
+      let attackerCards = null;
+      let victimCards = null;
+      if (action.attacker === "player") {
+        attackerCards = cards.playerBoard;
+        victimCards = cards.opponentBoard;
+      } else {
+        attackerCards = cards.opponentBoard;
+        victimCards = cards.playerBoard;
+      }
+
+      // TODO: bifurcated strikes
+      const attackerCard = attackerCards[idx];
+      const victimCard = victimCards[idx];
+      if (attackerCard != null && victimCard != null) {
+        victimCard.health -= attackerCard.attack;
+        if (victimCard.health <= 0) {
+          // Remove victim cards with zero health
+          victimCards[idx] = null;
+        }
+      }
+
+      return cards;
+    }
     default: {
-      throw Error("Unknown action: " + action.type);
+      throw Error("Unknown action.");
     }
   }
 };
@@ -89,25 +121,32 @@ const Game = () => {
   const onSelect = (cardIdx: number) => {
     setSelectedCard(cardIdx);
   };
+
+  const attack = (
+    attackerCards: BoardRowType,
+    victimCards: BoardRowType,
+    direction: "player" | "opponent"
+  ) => {
+    attackerCards.forEach((card, idx) => {
+      if (card != null) {
+        // TODO: bifurcated strikes
+        let victimCard = cards.opponentBoard[idx];
+        if (!victimCard) {
+          setPlayerScore((score) => score + card.attack);
+        } else {
+          dispatch({ type: "attack", idx: idx, attacker: "player" });
+        }
+      }
+    });
+  };
   const endTurn = () => {
     // setPlayerTurn(false); while the animations play out
 
+    // TODO: make sure these happen in series!
     // Player Attacks
-    cards.playerBoard.forEach((card) => {
-      if (card != null) {
-        // TODO: attack the other card
-        setPlayerScore((score) => score + card.attack);
-      }
-    });
-
-    cards.opponentBoard.forEach((card) => {
-      if (card != null) {
-        // TODO: attack the other card
-        setOpponentScore((score) => score + card.attack);
-      }
-    });
-
+    attack(cards.playerBoard, cards.opponentBoard, "player");
     // Opponent Attacks
+    //attack(cards.opponentBoard, cards.playerBoard, "opponent");
   };
 
   return (
