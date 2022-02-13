@@ -12,6 +12,7 @@ type CardsType = {
   hand: Array<CardType>;
   drawPile: Array<CardType>;
   playerBoard: BoardRowType;
+  opponentBoard: BoardRowType;
 };
 
 type ActionType = {
@@ -65,13 +66,15 @@ const initialCards: CardsType = {
   // so games are repeatable
   drawPile: _.shuffle(_.cloneDeep(deck)),
   playerBoard: [cardLibrary.dog, null, null, null],
+  opponentBoard: [null, cardLibrary.frog, null, null],
 };
 
 const Game = () => {
   const [cards, dispatch] = useImmerReducer(cardsReducer, initialCards);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-
-  const opponentBoard: BoardRowType = [null, null, null, null];
+  const [playerTurn, setPlayerTurn] = useState(true);
+  const [playerScore, setPlayerScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState(0);
 
   const drawCard = () => {
     dispatch({ type: "draw_card" });
@@ -86,14 +89,41 @@ const Game = () => {
   const onSelect = (cardIdx: number) => {
     setSelectedCard(cardIdx);
   };
-  const endTurn = () => {};
+  const endTurn = () => {
+    // setPlayerTurn(false); while the animations play out
+
+    // Player Attacks
+    cards.playerBoard.forEach((card) => {
+      if (card != null) {
+        // TODO: attack the other card
+        setPlayerScore((score) => score + card.attack);
+      }
+    });
+
+    cards.opponentBoard.forEach((card) => {
+      if (card != null) {
+        // TODO: attack the other card
+        setOpponentScore((score) => score + card.attack);
+      }
+    });
+
+    // Opponent Attacks
+  };
 
   return (
     <Container>
+      <h1>Score:</h1>
+      <div>
+        Player: {playerScore} | Opponent: {opponentScore}
+      </div>
       <h1>Board:</h1>
       <button onClick={endTurn}>End Turn</button>
-      <DisplayBoardRow cards={opponentBoard} />
-      <DisplayBoardRow cards={cards.playerBoard} playCard={playCard} />
+      <DisplayBoardRow cards={cards.opponentBoard} />
+      <DisplayBoardRow
+        cards={cards.playerBoard}
+        playCard={playCard}
+        activeCardSlot={null}
+      />
 
       <h1>Hand:</h1>
       <DisplayHand

@@ -9,9 +9,11 @@ export type BoardRowType = Tuple<CardType | null, 4>;
 const DisplayBoardRow = ({
   cards,
   playCard,
+  activeCardSlot,
 }: {
   cards: BoardRowType;
   playCard?(slot: number): void;
+  activeCardSlot?: number | null;
 }) => {
   return (
     <CardsContainer>
@@ -19,7 +21,9 @@ const DisplayBoardRow = ({
         return (
           <div key={slot}>
             {card ? (
-              <Card {...card} key={slot} />
+              <CardWrapper active={activeCardSlot === slot}>
+                <Card {...card} key={slot} />
+              </CardWrapper>
             ) : playCard ? (
               <UnstyledButton onClick={() => playCard(slot)}>
                 <EmptyCardSlot />
@@ -39,6 +43,10 @@ const CardsContainer = styled.div`
   & > div {
     margin: 5px;
   }
+`;
+
+const CardWrapper = styled.div<{ active: boolean }>`
+  ${(props) => (props.active ? "box-shadow: 0 0 0 2px red" : "")};
 `;
 
 export default DisplayBoardRow;
