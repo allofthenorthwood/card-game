@@ -19,6 +19,10 @@ type GameStateType = {
   opponentBoard: BoardRowType;
   playerScore: number;
   opponentScore: number;
+  activeCardIdx: number | null;
+  activeCardDirection: "player" | "opponent";
+  playerTurn: boolean;
+  canDrawCard: boolean;
 };
 
 type ActionType =
@@ -34,6 +38,12 @@ type ActionType =
       type: "attack";
       idx: number;
       attacker: "player" | "opponent";
+    }
+  | {
+      type: "end_turn";
+    }
+  | {
+      type: "start_turn";
     };
 
 // TODO: make deck for real
@@ -51,6 +61,7 @@ const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
       if (card) {
         gameState.hand.push(card);
       }
+      gameState.canDrawCard = false;
       return gameState;
     }
     case "play_card": {
@@ -71,6 +82,8 @@ const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
       const idx = action.idx;
       let attackerCards = null;
       let victimCards = null;
+      gameState.activeCardDirection = action.attacker;
+      gameState.activeCardIdx = idx;
       if (action.attacker === "player") {
         attackerCards = gameState.playerBoard;
         victimCards = gameState.opponentBoard;
@@ -100,6 +113,17 @@ const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
 
       return gameState;
     }
+    case "end_turn": {
+      gameState.playerTurn = false;
+      gameState.canDrawCard = false;
+      // TODO: could put attacking logic in here?
+      return gameState;
+    }
+    case "start_turn": {
+      gameState.playerTurn = true;
+      gameState.canDrawCard = true;
+      return gameState;
+    }
     default: {
       throw Error("Unknown action.");
     }
@@ -115,6 +139,10 @@ const initialGameState: GameStateType = {
   opponentBoard: [null, cardLibrary.frog, null, null],
   playerScore: 0,
   opponentScore: 0,
+  activeCardIdx: null,
+  activeCardDirection: "player",
+  playerTurn: true,
+  canDrawCard: true,
 };
 
 const Game = () => {
@@ -123,8 +151,6 @@ const Game = () => {
     initialGameState
   );
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  // TODO: set/unset this based on whether the animations are still playing
-  const [playerTurn, setPlayerTurn] = useState(true);
 
   const drawCard = () => {
     dispatch({ type: "draw_card" });
@@ -137,7 +163,9 @@ const Game = () => {
     }
   };
   const onSelect = (cardIdx: number) => {
-    setSelectedCard(cardIdx);
+    setSelectedCard(
+      selectedCard != null && selectedCard === cardIdx ? null : cardIdx
+    );
   };
 
   const attack = async (
@@ -146,20 +174,19 @@ const Game = () => {
   ) => {
     for (let i = 0; i < attackerCards.length; i++) {
       let card = attackerCards[i];
-      if (card != null) {
-        dispatch({ type: "attack", idx: i, attacker: direction });
-        await sleep(100);
-      }
+      dispatch({ type: "attack", idx: i, attacker: direction });
+
+      // TODO: Align this timer with animations:
+      await sleep(500);
     }
   };
-  const endTurn = async () => {
-    // setPlayerTurn(false); while the animations play out
-
+  const ringBell = async () => {
+    await dispatch({ type: "end_turn" });
     // Player Attacks
-    attack(gameState.playerBoard, "player");
-    await sleep(100);
+    await attack(gameState.playerBoard, "player");
     // Opponent Attacks
-    attack(gameState.opponentBoard, "opponent");
+    await attack(gameState.opponentBoard, "opponent");
+    await dispatch({ type: "start_turn" });
   };
 
   return (
@@ -169,12 +196,26 @@ const Game = () => {
         Player: {gameState.playerScore} | Opponent: {gameState.opponentScore}
       </div>
       <h1>Board:</h1>
-      <button onClick={endTurn}>End Turn</button>
-      <DisplayBoardRow cards={gameState.opponentBoard} />
+      <button onClick={ringBell} disabled={!gameState.playerTurn}>
+        End Turn
+      </button>
+      <DisplayBoardRow
+        cards={gameState.opponentBoard}
+        activeCardSlot={
+          !gameState.playerTurn && gameState.activeCardDirection === "opponent"
+            ? gameState.activeCardIdx
+            : null
+        }
+        reverseActiveDirection={true}
+      />
       <DisplayBoardRow
         cards={gameState.playerBoard}
         playCard={playCard}
-        activeCardSlot={null}
+        activeCardSlot={
+          !gameState.playerTurn && gameState.activeCardDirection === "player"
+            ? gameState.activeCardIdx
+            : null
+        }
       />
 
       <h1>Hand:</h1>
@@ -183,7 +224,9 @@ const Game = () => {
         selected={selectedCard}
         onSelect={onSelect}
       />
-      <button onClick={drawCard}>Draw Card</button>
+      <button onClick={drawCard} disabled={!gameState.playerTurn}>
+        Draw Card
+      </button>
 
       <h1>Draw Pile:</h1>
       <DisplayCards cards={gameState.drawPile} />

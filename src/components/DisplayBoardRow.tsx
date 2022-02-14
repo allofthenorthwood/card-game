@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import Card, { EmptyCardSlot } from "src/components/Card";
+import Card, { cardShape, EmptyCardSlot } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import { Tuple } from "src/types";
 import UnstyledButton from "src/components/UnstyledButton";
@@ -10,18 +10,23 @@ const DisplayBoardRow = ({
   cards,
   playCard,
   activeCardSlot,
+  reverseActiveDirection,
 }: {
   cards: BoardRowType;
   playCard?(slot: number): void;
   activeCardSlot?: number | null;
+  reverseActiveDirection?: boolean;
 }) => {
   return (
     <CardsContainer>
       {cards.map((card, slot) => {
         return (
-          <div key={slot}>
+          <SlotWrapper key={slot} active={activeCardSlot === slot}>
             {card ? (
-              <CardWrapper active={activeCardSlot === slot}>
+              <CardWrapper
+                active={activeCardSlot === slot}
+                reverse={reverseActiveDirection}
+              >
                 <Card {...card} key={slot} />
               </CardWrapper>
             ) : playCard ? (
@@ -31,7 +36,7 @@ const DisplayBoardRow = ({
             ) : (
               <EmptyCardSlot />
             )}
-          </div>
+          </SlotWrapper>
         );
       })}
     </CardsContainer>
@@ -45,8 +50,15 @@ const CardsContainer = styled.div`
   }
 `;
 
-const CardWrapper = styled.div<{ active: boolean }>`
-  ${(props) => (props.active ? "box-shadow: 0 0 0 2px red" : "")};
+const CardWrapper = styled.div<{ active: boolean; reverse?: boolean }>`
+  position: absolute;
+  top: ${(props) => (props.active ? (props.reverse ? "20" : "-20") : "0")}px;
+  z-index: ${(props) => (props.active ? 1 : 0)};
+`;
+const SlotWrapper = styled.div<{ active: boolean }>`
+  ${cardShape}
+  position: relative;
+  background: ${(props) => (props.active ? "#aaa" : "#ddd")};
 `;
 
 export default DisplayBoardRow;

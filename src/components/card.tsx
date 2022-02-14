@@ -5,11 +5,13 @@ import { CardType } from "src/cardLibrary";
 import ResizeText from "src/components/ResizeText";
 import styleVars from "src/styleVars";
 
+const maxTitleSize = 20;
+
 const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   return (
     <Container>
       <Title>
-        <ResizeText maxFontSize={24}>{name}</ResizeText>
+        <ResizeText maxFontSize={maxTitleSize}>{name}</ResizeText>
       </Title>
       <CenterPanel>
         <Icon>
@@ -43,21 +45,22 @@ type ContainerProps = {
   empty?: boolean;
 };
 
-const Container = styled.div<ContainerProps>`
-  width: 100px;
-  height: 150px;
-
+export const cardShape = `
+  width: 80px;
+  height: 120px;
   border-radius: ${styleVars.borderRadius}px;
+`;
+
+const Container = styled.div<ContainerProps>`
+  ${cardShape}
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: stretch;
   align-items: stretch;
-  font-size: 20px;
-
-  zoom: 80%;
-
-  border: 1px solid ${(props) => (props.empty ? "#ddd" : "#999")};
-  background: ${(props) => (props.empty ? "#fff" : "#f3f3f3")};
+  font-size: 16px;
+  border: 1px solid ${(props) => (props.empty ? "transparent" : "#999")};
+  ${(props) => (props.empty ? "" : "background: #f3f3f3;")}
 `;
 
 const Title = styled.div`
@@ -73,13 +76,13 @@ const CenterPanel = styled.div`
   display: flex;
 `;
 const Icon = styled.div`
-  font-size: 50px;
+  font-size: 40px;
 `;
 
 const Footer = styled.div`
   display: flex;
   align-items: flex-end;
-  padding: 0 5px;
+  padding: 0 2px;
   justify-content: space-between;
   border-top: ${border};
 `;
@@ -94,7 +97,7 @@ const StatVal = styled.div`
   padding-left: 4px;
 `;
 const StatIcon = styled.div`
-  font-size: 16px;
+  font-size: 12px;
 `;
 
 export default Card;

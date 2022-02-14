@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import Card from "src/components/Card";
+import Card, { cardShape } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import UnstyledButton from "src/components/UnstyledButton";
 import styleVars from "src/styleVars";
@@ -23,10 +23,12 @@ const DisplayHand = ({
     <CardsContainer>
       {cards.map((card, idx) => {
         return (
-          <CardSpot key={idx} selected={selected === idx}>
-            <UnstyledButton onClick={() => onSelect(idx)}>
-              <Card {...card} />
-            </UnstyledButton>
+          <CardSpot key={idx}>
+            <CardSpotInner selected={selected === idx}>
+              <UnstyledButton onClick={() => onSelect(idx)}>
+                <Card {...card} />
+              </UnstyledButton>
+            </CardSpotInner>
           </CardSpot>
         );
       })}
@@ -37,14 +39,19 @@ const DisplayHand = ({
 const CardsContainer = styled.div`
   display: flex;
 `;
-type CardSpotType = {
+type CardSpotInnerType = {
   selected: boolean;
 };
-const CardSpot = styled.div<CardSpotType>`
+const CardSpot = styled.div`
+  ${cardShape}
   margin-right: 5px;
-  background: ${(props) => (props.selected ? "red" : "#000")};
+  position: relative;
   padding: 2px;
   border-radius: ${styleVars.borderRadius}px;
+`;
+const CardSpotInner = styled.div<CardSpotInnerType>`
+  position: absolute;
+  top: ${(props) => (props.selected ? "-20" : "0")}px;
 `;
 
 export default DisplayHand;
