@@ -27,11 +27,7 @@ const DisplayBoardRow = ({
         return (
           <SlotWrapper key={slot} active={activeCardSlot === slot}>
             {card ? (
-              <CardWrapper
-                active={activeCardSlot === slot}
-                reverse={reverseActiveDirection}
-                style={animProps}
-              >
+              <CardWrapper style={animProps}>
                 <Card {...card} key={slot} />
               </CardWrapper>
             ) : playCard ? (
@@ -55,17 +51,14 @@ const CardsContainer = styled.div`
   }
 `;
 
-const CardWrapper = styled(animated.div)<{
-  active: boolean;
-  reverse?: boolean;
-}>`
+const CardWrapper = styled(animated.div)`
   position: absolute;
-  z-index: ${(props) => (props.active ? 1 : 0)};
 `;
 const SlotWrapper = styled.div<{ active: boolean }>`
   ${cardShape}
   position: relative;
   background: ${(props) => (props.active ? "#aaa" : "#ddd")};
+  z-index: ${(props) => (props.active ? 1 : 0)};
 `;
 
 export default DisplayBoardRow;

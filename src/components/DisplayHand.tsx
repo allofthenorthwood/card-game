@@ -3,8 +3,33 @@ import Card, { cardShape } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import UnstyledButton from "src/components/UnstyledButton";
 import styleVars from "src/styleVars";
+import { useSpring, animated } from "react-spring";
 
 type CardsList = Array<CardType>;
+
+const HandCard = ({
+  selected,
+  card,
+  onClick,
+}: {
+  selected: boolean;
+  card: CardType;
+  onClick(): void;
+}) => {
+  const animProps = useSpring({
+    to: { top: selected ? -20 : 0 },
+    from: { top: 0 },
+  });
+  return (
+    <CardSpot>
+      <CardSpotInner style={animProps} selected={selected}>
+        <UnstyledButton onClick={onClick}>
+          <Card {...card} />
+        </UnstyledButton>
+      </CardSpotInner>
+    </CardSpot>
+  );
+};
 
 const DisplayHand = ({
   cards,
@@ -23,13 +48,12 @@ const DisplayHand = ({
     <CardsContainer>
       {cards.map((card, idx) => {
         return (
-          <CardSpot key={idx}>
-            <CardSpotInner selected={selected === idx}>
-              <UnstyledButton onClick={() => onSelect(idx)}>
-                <Card {...card} />
-              </UnstyledButton>
-            </CardSpotInner>
-          </CardSpot>
+          <HandCard
+            selected={selected === idx}
+            key={idx}
+            card={card}
+            onClick={() => onSelect(idx)}
+          />
         );
       })}
     </CardsContainer>
@@ -42,16 +66,15 @@ const CardsContainer = styled.div`
 type CardSpotInnerType = {
   selected: boolean;
 };
-const CardSpot = styled.div`
+const CardSpot = styled(animated.div)`
   ${cardShape}
   margin-right: 5px;
   position: relative;
   padding: 2px;
   border-radius: ${styleVars.borderRadius}px;
 `;
-const CardSpotInner = styled.div<CardSpotInnerType>`
+const CardSpotInner = styled(animated.div)<CardSpotInnerType>`
   position: absolute;
-  top: ${(props) => (props.selected ? "-20" : "0")}px;
 `;
 
 export default DisplayHand;

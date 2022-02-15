@@ -32,6 +32,12 @@ const cardLibrary: { [cardId: string]: CardType } = {
     health: 3,
     icon: faDog,
   },
+  dragon: {
+    name: "Oroboros",
+    attack: 2,
+    health: 2,
+    icon: faDragon,
+  },
 };
 
 export default cardLibrary;
