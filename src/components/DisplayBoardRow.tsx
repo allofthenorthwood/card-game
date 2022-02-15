@@ -3,6 +3,7 @@ import Card, { cardShape, EmptyCardSlot } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import { Tuple } from "src/types";
 import UnstyledButton from "src/components/UnstyledButton";
+import { useSpring, animated } from "react-spring";
 
 export type BoardRowType = Tuple<CardType | null, 4>;
 
@@ -20,12 +21,16 @@ const DisplayBoardRow = ({
   return (
     <CardsContainer>
       {cards.map((card, slot) => {
+        const top =
+          activeCardSlot === slot ? (reverseActiveDirection ? 20 : -20) : 0;
+        const animProps = useSpring({ to: { top }, from: { top: 0 } });
         return (
           <SlotWrapper key={slot} active={activeCardSlot === slot}>
             {card ? (
               <CardWrapper
                 active={activeCardSlot === slot}
                 reverse={reverseActiveDirection}
+                style={animProps}
               >
                 <Card {...card} key={slot} />
               </CardWrapper>
@@ -50,9 +55,11 @@ const CardsContainer = styled.div`
   }
 `;
 
-const CardWrapper = styled.div<{ active: boolean; reverse?: boolean }>`
+const CardWrapper = styled(animated.div)<{
+  active: boolean;
+  reverse?: boolean;
+}>`
   position: absolute;
-  top: ${(props) => (props.active ? (props.reverse ? "20" : "-20") : "0")}px;
   z-index: ${(props) => (props.active ? 1 : 0)};
 `;
 const SlotWrapper = styled.div<{ active: boolean }>`

@@ -51,6 +51,8 @@ const deck = [
   { ...cardLibrary.frog },
   { ...cardLibrary.dog },
   { ...cardLibrary.frog },
+  { ...cardLibrary.dragon },
+  { ...cardLibrary.frog },
 ];
 
 const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
