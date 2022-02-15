@@ -198,6 +198,7 @@ const Game = () => {
     await dispatch({ type: "start_turn" });
   };
 
+  // TODO: handle max score diff (i.e. > 5) and pass max through to scoreboard
   return (
     <Container>
       <ScoreBoardContainer>
@@ -259,8 +260,10 @@ const Game = () => {
         />
       </UIRow>
 
-      <h1>Deck:</h1>
-      <DisplayCards cards={deck} />
+      <DeckWrapper>
+        <DeckLabel>Deck:</DeckLabel>
+        <DisplayCards cards={deck} />
+      </DeckWrapper>
     </Container>
   );
 };
@@ -271,7 +274,7 @@ const Container = styled.div`
 const ScoreBoardContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 `;
 
 const UIRow = styled.div`
@@ -280,6 +283,8 @@ const UIRow = styled.div`
 `;
 const EndTurnButtonWrapper = styled.div`
   flex-grow: 0;
+  display: flex;
+  justify-content: center;
 `;
 
 const EndTurnButton = styled.div`
@@ -319,6 +324,17 @@ const RowLabel = styled.div`
   color: #999;
   font-weight: bold;
   font-size: 0.8em;
+`;
+
+const DeckLabel = styled.div`
+  border-top: 1px solid #999;
+  margin-top: 100px;
+  font-size: 24px;
+  font-weight: bold;
+  padding 10px;
+`;
+const DeckWrapper = styled.div`
+  zoom: 60%;
 `;
 
 export default Game;
