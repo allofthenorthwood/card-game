@@ -2,7 +2,6 @@ import styled from "styled-components";
 import Card, { cardShape } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import UnstyledButton from "src/components/UnstyledButton";
-import styleVars from "src/styleVars";
 import { useSpring, animated } from "react-spring";
 
 type CardsList = Array<CardType>;
@@ -41,7 +40,7 @@ const DisplayHand = ({
   onSelect: (cardIdx: number) => void;
 }) => {
   if (cards.length === 0) {
-    return <div>(You have no cards in your hand)</div>;
+    return <EmptyHand>(Hand empty)</EmptyHand>;
   }
 
   return (
@@ -60,9 +59,7 @@ const DisplayHand = ({
   );
 };
 
-const CardsContainer = styled.div`
-  display: flex;
-`;
+const CardsContainer = styled.div``;
 type CardSpotInnerType = {
   selected: boolean;
 };
@@ -71,10 +68,18 @@ const CardSpot = styled(animated.div)`
   margin-right: 5px;
   position: relative;
   padding: 2px;
-  border-radius: ${styleVars.borderRadius}px;
+  display: inline-block;
 `;
 const CardSpotInner = styled(animated.div)<CardSpotInnerType>`
   position: absolute;
+`;
+
+const EmptyHand = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #999;
 `;
 
 export default DisplayHand;

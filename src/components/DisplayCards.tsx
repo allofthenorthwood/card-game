@@ -12,17 +12,20 @@ const DisplayCards = ({ cards }: { cards: CardsList }) => {
   return (
     <CardsContainer>
       {cards.map((card, idx) => {
-        return <Card key={idx} {...card} />;
+        return (
+          <CardWrapper key={idx}>
+            <Card {...card} />
+          </CardWrapper>
+        );
       })}
     </CardsContainer>
   );
 };
 
-const CardsContainer = styled.div`
-  display: flex;
-  & > div {
-    margin: 5px;
-  }
+const CardsContainer = styled.div``;
+const CardWrapper = styled.div`
+  margin: 5px;
+  display: inline-block;
 `;
 
 export default DisplayCards;

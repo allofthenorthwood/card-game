@@ -3,11 +3,17 @@ import styled from "styled-components";
 const UnstyledButton = ({
   children,
   onClick,
+  disabled,
 }: {
   children: JSX.Element;
   onClick(): void;
+  disabled?: boolean;
 }) => {
-  return <Button onClick={onClick}>{children}</Button>;
+  return (
+    <Button onClick={onClick} disabled={disabled}>
+      {children}
+    </Button>
+  );
 };
 
 const Button = styled.button`

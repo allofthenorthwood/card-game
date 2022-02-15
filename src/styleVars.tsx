@@ -1,5 +1,6 @@
 const styleVars = {
-  borderRadius: 10,
+  cardBorderRadius: 10,
+  buttonBorderRadius: 5,
 };
 
 export default styleVars;

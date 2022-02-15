@@ -36,6 +36,14 @@ const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
   );
 };
 
+export const ReverseCardSlot = () => {
+  return (
+    <ReverseContainer>
+      <FontAwesomeIcon icon={faPaw} />
+    </ReverseContainer>
+  );
+};
+
 export const EmptyCardSlot = () => {
   return <Container empty={true} />;
 };
@@ -43,12 +51,13 @@ export const EmptyCardSlot = () => {
 const border = "2px solid #ddd";
 type ContainerProps = {
   empty?: boolean;
+  reverse?: boolean;
 };
 
 export const cardShape = `
   width: 80px;
   height: 120px;
-  border-radius: ${styleVars.borderRadius}px;
+  border-radius: ${styleVars.cardBorderRadius}px;
 `;
 
 const Container = styled.div<ContainerProps>`
@@ -60,7 +69,17 @@ const Container = styled.div<ContainerProps>`
   align-items: stretch;
   font-size: 16px;
   border: 1px solid ${(props) => (props.empty ? "transparent" : "#999")};
-  ${(props) => (props.empty ? "" : "background: #f3f3f3;")}
+  background: ${(props) => (props.empty ? "transparent" : "#f3f3f3;")};
+`;
+const ReverseContainer = styled.div`
+  ${cardShape}
+  display: flex;
+  background: #bbb;
+  color: #ddd;
+  border: 1px solid #999;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
 `;
 
 const Title = styled.div`

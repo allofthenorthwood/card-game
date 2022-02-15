@@ -1,12 +1,19 @@
 import styled from "styled-components";
 import { useImmerReducer } from "use-immer";
 import { useState } from "react";
-import _, { delay } from "lodash";
+import _ from "lodash";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBellConcierge } from "@fortawesome/free-solid-svg-icons";
 
 import DisplayCards from "src/components/DisplayCards";
 import DisplayHand from "src/components/DisplayHand";
+import DisplayDrawPile from "src/components/DisplayDrawPile";
 import DisplayBoardRow, { BoardRowType } from "src/components/DisplayBoardRow";
 import cardLibrary, { CardType } from "src/cardLibrary";
+import ScoreBoard from "src/components/Scoreboard";
+import UnstyledButton from "src/components/UnstyledButton";
+import styleVars from "src/styleVars";
 
 function sleep(delayMs: number): Promise<void> {
   return new Promise((res) => setTimeout(res, delayMs));
@@ -193,45 +200,64 @@ const Game = () => {
 
   return (
     <Container>
-      <h1>Score:</h1>
-      <div>
-        Player: {gameState.playerScore} | Opponent: {gameState.opponentScore}
-      </div>
-      <h1>Board:</h1>
-      <button onClick={ringBell} disabled={!gameState.playerTurn}>
-        End Turn
-      </button>
-      <DisplayBoardRow
-        cards={gameState.opponentBoard}
-        activeCardSlot={
-          !gameState.playerTurn && gameState.activeCardDirection === "opponent"
-            ? gameState.activeCardIdx
-            : null
-        }
-        reverseActiveDirection={true}
-      />
-      <DisplayBoardRow
-        cards={gameState.playerBoard}
-        playCard={playCard}
-        activeCardSlot={
-          !gameState.playerTurn && gameState.activeCardDirection === "player"
-            ? gameState.activeCardIdx
-            : null
-        }
-      />
+      <ScoreBoardContainer>
+        <ScoreBoard
+          playerScore={gameState.playerScore}
+          opponentScore={gameState.opponentScore}
+        />
+      </ScoreBoardContainer>
+      <Row>
+        <RowLabel>Opponent</RowLabel>
+        <DisplayBoardRow
+          cards={gameState.opponentBoard}
+          activeCardSlot={
+            !gameState.playerTurn &&
+            gameState.activeCardDirection === "opponent"
+              ? gameState.activeCardIdx
+              : null
+          }
+          reverseActiveDirection={true}
+        />
+      </Row>
+      <Row>
+        <RowLabel>Player</RowLabel>
+        <DisplayBoardRow
+          cards={gameState.playerBoard}
+          playCard={playCard}
+          activeCardSlot={
+            !gameState.playerTurn && gameState.activeCardDirection === "player"
+              ? gameState.activeCardIdx
+              : null
+          }
+        />
+      </Row>
 
-      <h1>Hand:</h1>
-      <DisplayHand
-        cards={gameState.hand}
-        selected={selectedCard}
-        onSelect={onSelect}
-      />
-      <button onClick={drawCard} disabled={!gameState.playerTurn}>
-        Draw Card
-      </button>
+      <UIRow>
+        <EndTurnButtonWrapper>
+          <UnstyledButton onClick={ringBell} disabled={!gameState.playerTurn}>
+            <EndTurnButton>
+              <EndButtonIcon>
+                <FontAwesomeIcon icon={faBellConcierge} />
+              </EndButtonIcon>
+              End Turn
+            </EndTurnButton>
+          </UnstyledButton>
+        </EndTurnButtonWrapper>
 
-      <h1>Draw Pile:</h1>
-      <DisplayCards cards={gameState.drawPile} />
+        <HandWrapper>
+          <DisplayHand
+            cards={gameState.hand}
+            selected={selectedCard}
+            onSelect={onSelect}
+          />
+        </HandWrapper>
+
+        <DisplayDrawPile
+          drawCard={drawCard}
+          disabled={!gameState.playerTurn}
+          cards={gameState.drawPile}
+        />
+      </UIRow>
 
       <h1>Deck:</h1>
       <DisplayCards cards={deck} />
@@ -241,6 +267,58 @@ const Game = () => {
 
 const Container = styled.div`
   padding: 30px;
+`;
+const ScoreBoardContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+`;
+
+const UIRow = styled.div`
+  display: flex;
+  justify-content: stretch;
+`;
+const EndTurnButtonWrapper = styled.div`
+  flex-grow: 0;
+`;
+
+const EndTurnButton = styled.div`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #999;
+  border-radius: ${styleVars.buttonBorderRadius}px;
+  padding: 5px 10px;
+  background: #eee;
+  font-size: 8px;
+  line-height: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  &:hover {
+    background: #ddd;
+  }
+`;
+const EndButtonIcon = styled.div`
+  font-size: 45px;
+  text-align: center;
+`;
+
+const HandWrapper = styled.div`
+  flex-grow: 1;
+`;
+
+const Row = styled.div`
+  display: flex;
+`;
+const RowLabel = styled.div`
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  flex-grow: 0;
+  color: #999;
+  font-weight: bold;
+  font-size: 0.8em;
 `;
 
 export default Game;
