@@ -55,8 +55,8 @@ type ContainerProps = {
 };
 
 export const cardShape = `
-  width: 80px;
-  height: 120px;
+  width: ${styleVars.cardWidth}px;
+  height: ${styleVars.cardHeight}px;
   border-radius: ${styleVars.cardBorderRadius}px;
 `;
 

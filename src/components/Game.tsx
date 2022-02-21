@@ -60,6 +60,9 @@ const deck = [
   { ...cardLibrary.frog },
   { ...cardLibrary.dragon },
   { ...cardLibrary.frog },
+  { ...cardLibrary.frog },
+  { ...cardLibrary.frog },
+  { ...cardLibrary.frog },
 ];
 
 const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
@@ -199,6 +202,8 @@ const Game = () => {
   };
 
   // TODO: handle max score diff (i.e. > 5) and pass max through to scoreboard
+  // TODO: change the board into a css grid so the cards can animate from one location
+  // to another
   return (
     <Container>
       <ScoreBoardContainer>
@@ -245,13 +250,11 @@ const Game = () => {
           </UnstyledButton>
         </EndTurnButtonWrapper>
 
-        <HandWrapper>
-          <DisplayHand
-            cards={gameState.hand}
-            selected={selectedCard}
-            onSelect={onSelect}
-          />
-        </HandWrapper>
+        <DisplayHand
+          cards={gameState.hand}
+          selected={selectedCard}
+          onSelect={onSelect}
+        />
 
         <DisplayDrawPile
           drawCard={drawCard}
@@ -279,11 +282,12 @@ const ScoreBoardContainer = styled.div`
 
 const UIRow = styled.div`
   display: flex;
-  justify-content: stretch;
+  justify-content: space-between;
+  width: 100%;
 `;
 const EndTurnButtonWrapper = styled.div`
   flex-grow: 0;
-  display: flex;
+  padding: 10px;
   justify-content: center;
 `;
 
@@ -313,6 +317,8 @@ const HandWrapper = styled.div`
 
 const Row = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 const RowLabel = styled.div`
   writing-mode: vertical-lr;

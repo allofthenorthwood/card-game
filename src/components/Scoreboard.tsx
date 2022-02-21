@@ -40,7 +40,11 @@ const ScoreBoard = ({
             .map((val, idx) => {
               const cur = idx - scaleSize;
               return (
-                <ScoreTick center={cur === 0} current={scoreDifference === cur}>
+                <ScoreTick
+                  key={idx}
+                  center={cur === 0}
+                  current={scoreDifference === cur}
+                >
                   <TickLabel>{cur}</TickLabel>
                 </ScoreTick>
               );
