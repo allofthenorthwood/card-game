@@ -24,6 +24,7 @@ type GameStateType = {
   drawPile: Array<CardType>;
   playerBoard: BoardRowType;
   opponentBoard: BoardRowType;
+  opponentNextCards: BoardRowType;
   playerScore: number;
   opponentScore: number;
   activeCardIdx: number | null;
@@ -100,6 +101,13 @@ const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
         attackerCards = gameState.playerBoard;
         victimCards = gameState.opponentBoard;
       } else {
+        // Move new opponent cards onto the board
+        let newCard = gameState.opponentNextCards[idx];
+        let curCard = gameState.opponentBoard[idx];
+        if (curCard == null && newCard != null) {
+          gameState.opponentBoard[idx] = newCard;
+          gameState.opponentNextCards[idx] = null;
+        }
         attackerCards = gameState.opponentBoard;
         victimCards = gameState.playerBoard;
       }
@@ -155,6 +163,7 @@ const initialGameState: GameStateType = {
   activeCardDirection: "player",
   playerTurn: true,
   canDrawCard: true,
+  opponentNextCards: [null, null, null, cardLibrary.dog],
 };
 
 const Game = () => {
@@ -212,6 +221,16 @@ const Game = () => {
           opponentScore={gameState.opponentScore}
         />
       </ScoreBoardContainer>
+
+      <Row>
+        <RowLabel>Next Turn</RowLabel>
+        <DisplayBoardRow
+          cards={gameState.opponentNextCards}
+          activeCardSlot={null}
+          reverseActiveDirection={true}
+        />
+      </Row>
+
       <Row>
         <RowLabel>Opponent</RowLabel>
         <DisplayBoardRow

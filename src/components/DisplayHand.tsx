@@ -67,13 +67,16 @@ const DisplayHand = ({
     if (cardsEl && cards.length > 1) {
       const width = cardsRef.current.offsetWidth;
       const cardWidth = styleVars.cardWidth;
-      const buffer = 5;
+      const buffer = 1;
 
-      // width = (cardWidth - margin) * cards.length + cardWidth + buffer;
-      const margin = Math.ceil(
-        cardWidth - (width - cardWidth - buffer) / cards.length
+      // width = (cardWidth - margin) * (cards.length - 1) + cardWidth * 2 + buffer;
+      const newMargin = Math.max(
+        Math.ceil(
+          cardWidth - (width - cardWidth * 2 - buffer) / (cards.length - 1)
+        ),
+        25
       );
-      setMargin(margin * -1);
+      setMargin(newMargin * -1);
     }
   }, [cards]);
 
@@ -84,11 +87,12 @@ const DisplayHand = ({
   return (
     <CardsContainer ref={cardsRef}>
       {cards.map((card, idx) => {
+        const last = idx == cards.length - 1;
         return (
           <HandCard
             selected={selected === idx}
             hover={hoverIdx === idx}
-            last={idx == cards.length - 1}
+            last={last}
             margin={margin}
             key={idx}
             card={card}
@@ -102,8 +106,9 @@ const DisplayHand = ({
 };
 
 const CardsContainer = styled.div`
-  border: 1px solid red;
+  flex-grow: 1;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   padding-top: 20px;
 `;
