@@ -302,7 +302,9 @@ const ScoreBoardContainer = styled.div`
 const UIRow = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
+  padding: 25px 0;
 `;
 const EndTurnButtonWrapper = styled.div`
   flex-grow: 0;

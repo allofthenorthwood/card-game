@@ -1,16 +1,11 @@
 import styled from "styled-components";
-import Card, {
-  cardShape,
-  EmptyCardSlot,
-  ReverseCardSlot,
-} from "src/components/Card";
+import { cardShape, ReverseCardSlot } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import UnstyledButton from "src/components/UnstyledButton";
-import { useSpring, animated } from "react-spring";
 
 type CardsList = Array<CardType>;
 
-const DrawPileCard = ({ card, offset }: { card: CardType; offset: number }) => {
+const DrawPileCard = ({ offset }: { offset: number }) => {
   return (
     <CardSpot offset={offset}>
       <ReverseCardSlot />
@@ -28,15 +23,20 @@ const DisplayDrawPile = ({
   disabled: boolean;
 }) => {
   if (cards.length === 0) {
-    return <EmptyCardSlot />;
+    return (
+      <EmptyDrawPile>
+        <span>Draw pile empty</span>
+      </EmptyDrawPile>
+    );
   }
 
+  const offsetDistance = 2;
   return (
     <CardsContainer>
       <UnstyledButton onClick={drawCard} disabled={disabled}>
         <>
           {cards.map((card, idx) => {
-            return <DrawPileCard key={idx} offset={idx * 2} card={card} />;
+            return <DrawPileCard key={idx} offset={idx * offsetDistance} />;
           })}
         </>
       </UnstyledButton>
@@ -49,12 +49,22 @@ const CardsContainer = styled.div`
   position: relative;
 `;
 
+const EmptyDrawPile = styled.div`
+  ${cardShape}
+  border: 1px solid #ddd;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+`;
 const CardSpot = styled.div<{ offset: number }>`
   ${cardShape}
   margin-right: 5px;
   position: absolute;
-  top: ${(props) => props.offset}px;
-  left: ${(props) => props.offset}px;
+  top: -${(props) => props.offset}px;
+  right: -${(props) => props.offset}px;
   padding: 2px;
   display: inline-block;
 `;
