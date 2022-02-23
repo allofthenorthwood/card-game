@@ -41,7 +41,7 @@ const HandCard = ({
       onMouseOut={() => setHover(false)}
       style={leftProps}
     >
-      <CardSpotInner style={topProps} selected={selected}>
+      <CardSpotInner style={topProps}>
         <UnstyledButton onClick={onClick}>
           <Card {...card} />
         </UnstyledButton>
@@ -111,15 +111,12 @@ const CardsContainer = styled.div`
   justify-content: center;
   flex-wrap: wrap;
 `;
-type CardSpotInnerType = {
-  selected: boolean;
-};
 const CardSpot = styled(animated.div)`
   ${cardShape}
   position: relative;
   display: inline-block;
 `;
-const CardSpotInner = styled(animated.div)<CardSpotInnerType>`
+const CardSpotInner = styled(animated.div)`
   position: absolute;
 `;
 

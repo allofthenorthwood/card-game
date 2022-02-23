@@ -163,7 +163,7 @@ const initialGameState: GameStateType = {
   activeCardDirection: "player",
   playerTurn: true,
   canDrawCard: true,
-  opponentNextCards: [null, null, null, cardLibrary.dog],
+  opponentNextCards: [cardLibrary.frog, null, null, cardLibrary.dog],
 };
 
 const Game = () => {
@@ -254,6 +254,7 @@ const Game = () => {
               ? gameState.activeCardIdx
               : null
           }
+          disabled={selectedCard == null}
         />
       </Row>
 
@@ -330,10 +331,6 @@ const EndTurnButton = styled.div`
 const EndButtonIcon = styled.div`
   font-size: 45px;
   text-align: center;
-`;
-
-const HandWrapper = styled.div`
-  flex-grow: 1;
 `;
 
 const Row = styled.div`

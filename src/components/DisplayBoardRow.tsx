@@ -12,26 +12,32 @@ const DisplayBoardRow = ({
   playCard,
   activeCardSlot,
   reverseActiveDirection,
+  disabled,
 }: {
   cards: BoardRowType;
   playCard?(slot: number): void;
   activeCardSlot?: number | null;
   reverseActiveDirection?: boolean;
+  disabled?: boolean;
 }) => {
   return (
     <CardsContainer>
       {cards.map((card, slot) => {
-        const top =
-          activeCardSlot === slot ? (reverseActiveDirection ? 20 : -20) : 0;
+        const active = activeCardSlot === slot;
+        const top = active ? (reverseActiveDirection ? 20 : -20) : 0;
         const animProps = useSpring({ to: { top }, from: { top: 0 } });
+
         return (
-          <SlotWrapper key={slot} active={activeCardSlot === slot}>
+          <SlotWrapper key={slot} active={active}>
             {card ? (
-              <CardWrapper style={animProps}>
+              <CardWrapper style={animProps} $active={active}>
                 <Card {...card} key={slot} />
               </CardWrapper>
             ) : playCard ? (
-              <UnstyledButton onClick={() => playCard(slot)}>
+              <UnstyledButton
+                onClick={() => playCard(slot)}
+                disabled={disabled}
+              >
                 <EmptyCardSlot />
               </UnstyledButton>
             ) : (
@@ -50,15 +56,14 @@ const CardsContainer = styled.div`
     margin: 5px;
   }
 `;
-
-const CardWrapper = styled(animated.div)`
+const CardWrapper = styled(animated.div)<{ $active: boolean }>`
   position: absolute;
+  z-index: ${(props) => (props.$active ? 1 : 0)};
 `;
 const SlotWrapper = styled.div<{ active: boolean }>`
   ${cardShape}
   position: relative;
   background: ${(props) => (props.active ? "#aaa" : "#ddd")};
-  z-index: ${(props) => (props.active ? 1 : 0)};
 `;
 
 export default DisplayBoardRow;
