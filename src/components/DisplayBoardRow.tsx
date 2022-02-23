@@ -3,7 +3,7 @@ import Card, { cardShape, EmptyCardSlot } from "src/components/Card";
 import { CardType } from "src/cardLibrary";
 import { Tuple } from "src/types";
 import UnstyledButton from "src/components/UnstyledButton";
-import { useSpring, animated } from "react-spring";
+import { useSpring, animated, useTransition } from "react-spring";
 
 export type BoardRowType = Tuple<CardType | null, 4>;
 
@@ -21,27 +21,46 @@ const DisplayBoardRow = ({
   disabled?: boolean;
 }) => {
   return (
-    <CardsContainer>
+    <CardsContainer activeRow={activeCardSlot != null}>
       {cards.map((card, slot) => {
         const active = activeCardSlot === slot;
         const top = active ? (reverseActiveDirection ? 20 : -20) : 0;
-        const animProps = useSpring({ to: { top }, from: { top: 0 } });
+        const cardStyles = useSpring({
+          to: { top },
+          from: { top: 0 },
+        });
+        const slotStyles = useSpring({
+          to: { background: active ? "#aaa" : "#eee" },
+          from: { background: "#eee" },
+        });
+
+        const transitions = useTransition(card, {
+          from: { opacity: 0, zIndex: 0 },
+          to: {
+            opacity: 0,
+            zIndex: 100,
+          },
+          enter: { opacity: 1, zIndex: 0 },
+          leave: { opacity: 0, zIndex: 0 },
+        });
 
         return (
-          <SlotWrapper key={slot} active={active}>
-            {card ? (
-              <CardWrapper style={animProps} $active={active}>
-                <Card {...card} key={slot} />
-              </CardWrapper>
-            ) : playCard ? (
-              <UnstyledButton
-                onClick={() => playCard(slot)}
-                disabled={disabled}
-              >
+          <SlotWrapper key={slot} $active={active} style={slotStyles}>
+            {transitions((styles, item) =>
+              item ? (
+                <CardWrapper style={{ ...styles, ...cardStyles }}>
+                  <Card {...item} />
+                </CardWrapper>
+              ) : playCard ? (
+                <UnstyledButton
+                  onClick={() => playCard(slot)}
+                  disabled={disabled}
+                >
+                  <EmptyCardSlot />
+                </UnstyledButton>
+              ) : (
                 <EmptyCardSlot />
-              </UnstyledButton>
-            ) : (
-              <EmptyCardSlot />
+              )
             )}
           </SlotWrapper>
         );
@@ -50,20 +69,20 @@ const DisplayBoardRow = ({
   );
 };
 
-const CardsContainer = styled.div`
+const CardsContainer = styled.div<{ activeRow: boolean }>`
   display: flex;
+  z-index: ${(props) => (props.activeRow ? 1 : 0)};
   & > div {
-    margin: 5px;
   }
 `;
-const CardWrapper = styled(animated.div)<{ $active: boolean }>`
+const CardWrapper = styled(animated.div)`
   position: absolute;
-  z-index: ${(props) => (props.$active ? 1 : 0)};
 `;
-const SlotWrapper = styled.div<{ active: boolean }>`
+const SlotWrapper = styled(animated.div)<{ $active: boolean }>`
   ${cardShape}
   position: relative;
-  background: ${(props) => (props.active ? "#aaa" : "#ddd")};
+  background: ${(props) => (props.$active ? "#aaa" : "#ddd")};
+  margin: 5px;
 `;
 
 export default DisplayBoardRow;
