@@ -94,7 +94,7 @@ const DisplayHand = ({
             hover={hoverIdx === idx}
             last={last}
             margin={margin}
-            key={idx}
+            key={card.id}
             card={card}
             onClick={() => onSelect(idx)}
             setHover={(hovered) => setHoverIdx(hovered ? idx : null)}
