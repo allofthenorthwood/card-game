@@ -7,7 +7,15 @@ import styleVars from "src/styleVars";
 
 const maxTitleSize = 20;
 
-export const RawCard = ({ card }: { card: CardType }) => {
+export const RawCard = ({
+  card,
+  healthDiff,
+  attackDiff,
+}: {
+  card: CardType;
+  healthDiff?: number;
+  attackDiff?: number;
+}) => {
   const { name, icon, attack, health } = card;
   return (
     <Container>
@@ -20,13 +28,13 @@ export const RawCard = ({ card }: { card: CardType }) => {
         </Icon>
       </CenterPanel>
       <Footer>
-        <Stat>
+        <Stat statDiff={attackDiff}>
           <StatIcon>
             <FontAwesomeIcon icon={faHandFist} />
           </StatIcon>
           <StatVal>{attack}</StatVal>
         </Stat>
-        <Stat>
+        <Stat statDiff={healthDiff}>
           <StatIcon>
             <FontAwesomeIcon icon={faHeart} />
           </StatIcon>
@@ -37,7 +45,11 @@ export const RawCard = ({ card }: { card: CardType }) => {
   );
 };
 const Card = ({ card }: { card: PlayableCardType }) => {
-  return <RawCard card={card.card} />;
+  const attackDiff = card.card.attack - card.originalCard.attack;
+  const healthDiff = card.card.health - card.originalCard.health;
+  return (
+    <RawCard card={card.card} attackDiff={attackDiff} healthDiff={healthDiff} />
+  );
 };
 
 export const ReverseCardSlot = () => {
@@ -109,12 +121,18 @@ const Footer = styled.div`
   justify-content: space-between;
   border-top: ${border};
 `;
-const Stat = styled.div`
+const Stat = styled.div<{ statDiff?: number }>`
   padding: 5px;
   display: flex;
   flex-direction: row;
   font-weight: bold;
   align-items: center;
+  color: ${(props) =>
+    props.statDiff
+      ? props.statDiff > 0
+        ? styleVars.green
+        : styleVars.red
+      : "inherit"};
 `;
 const StatVal = styled.div`
   padding-left: 4px;
