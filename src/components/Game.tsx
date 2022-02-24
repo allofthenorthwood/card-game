@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useImmerReducer } from "use-immer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import _ from "lodash";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,6 +18,9 @@ import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
 import styleVars from "src/styleVars";
 
+const SCORE_LIMIT = 5; // Difference in score that ends the game
+const INITIAL_HAND_SIZE = 5; // Starting number of cards in your hand
+
 function sleep(delayMs: number): Promise<void> {
   return new Promise((res) => setTimeout(res, delayMs));
 }
@@ -34,9 +37,56 @@ type GameStateType = {
   activeCardDirection: "player" | "opponent";
   playerTurn: boolean;
   canDrawCard: boolean;
+  gameOver: boolean;
 };
+// TODO: make deck for real
+const deck: Array<PlayableCardType> = [
+  makeCard("frog"),
+  makeCard("dog"),
+  makeCard("frog"),
+  makeCard("dragon"),
+  makeCard("frog"),
+  makeCard("frog"),
+  makeCard("dog"),
+  makeCard("frog"),
+];
+
+const makeInitialGameState = () => {
+  const init: GameStateType = {
+    hand: [],
+    // NOTE: could make the randomness of shuffle based on a seed
+    // so games are repeatable
+    drawPile: _.shuffle(_.cloneDeep(deck)),
+    playerBoard: [makeCard("dog"), null, null, null],
+    opponentBoard: [null, makeCard("frog"), null, null],
+    opponentNextCards: [makeCard("frog"), null, null, makeCard("dog")],
+    playerScore: 0,
+    opponentScore: 0,
+    activeCardIdx: null,
+    activeCardDirection: "player",
+    playerTurn: true,
+    canDrawCard: true,
+    gameOver: false,
+  };
+
+  const gameState = init;
+  for (let i = 0; i < INITIAL_HAND_SIZE; i++) {
+    const card = gameState.drawPile.pop();
+    if (card) {
+      gameState.hand.push(card);
+    }
+  }
+  return gameState;
+};
+const initialGameState: GameStateType = makeInitialGameState();
 
 type ActionType =
+  | {
+      type: "reset_game";
+    }
+  | {
+      type: "end_game";
+    }
   | {
       type: "draw_card";
     }
@@ -57,20 +107,23 @@ type ActionType =
       type: "start_turn";
     };
 
-// TODO: make deck for real
-const deck: Array<PlayableCardType> = [
-  makeCard("frog"),
-  makeCard("dog"),
-  makeCard("frog"),
-  makeCard("dragon"),
-  makeCard("frog"),
-  makeCard("frog"),
-  makeCard("dog"),
-  makeCard("frog"),
-];
-
-const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
+const gameStateReducer = (
+  gameState: GameStateType,
+  action: ActionType
+): GameStateType => {
+  if (gameState.gameOver) {
+    if (action.type === "reset_game") {
+      return makeInitialGameState();
+    } else {
+      return gameState;
+    }
+  }
   switch (action.type) {
+    case "end_game": {
+      gameState.gameOver = true;
+      gameState.activeCardIdx = null;
+      return gameState;
+    }
     case "draw_card": {
       // move card from draw pile to hand
       const card = gameState.drawPile.pop();
@@ -153,22 +206,6 @@ const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
   }
 };
 
-const initialGameState: GameStateType = {
-  hand: [],
-  // NOTE: could make the randomness of shuffle based on a seed
-  // so games are repeatable
-  drawPile: _.shuffle(_.cloneDeep(deck)),
-  playerBoard: [makeCard("dog"), null, null, null],
-  opponentBoard: [null, makeCard("frog"), null, null],
-  opponentNextCards: [makeCard("frog"), null, null, makeCard("dog")],
-  playerScore: 0,
-  opponentScore: 0,
-  activeCardIdx: null,
-  activeCardDirection: "player",
-  playerTurn: true,
-  canDrawCard: true,
-};
-
 const Game = () => {
   const [gameState, dispatch] = useImmerReducer(
     gameStateReducer,
@@ -197,27 +234,53 @@ const Game = () => {
     direction: "player" | "opponent"
   ) => {
     for (let i = 0; i < attackerCards.length; i++) {
-      let card = attackerCards[i];
       dispatch({ type: "attack", idx: i, attacker: direction });
-
+      if (gameState.gameOver) {
+        // TODO: This can't be the right way to do this
+        break;
+      }
       // TODO: Align this timer with animations:
       await sleep(500);
     }
   };
   const ringBell = async () => {
-    await dispatch({ type: "end_turn" });
+    dispatch({ type: "end_turn" });
     // Player Attacks
     await attack(gameState.playerBoard, "player");
     // Opponent Attacks
     await attack(gameState.opponentBoard, "opponent");
     await dispatch({ type: "start_turn" });
   };
+  const resetGame = () => {
+    dispatch({ type: "reset_game" });
+  };
+
+  useEffect(() => {
+    const scoreDiff = gameState.playerScore - gameState.opponentScore;
+    if (Math.abs(scoreDiff) >= SCORE_LIMIT) {
+      // TODO: have this happen after last animation finishes
+      dispatch({ type: "end_game" });
+    }
+  }, [gameState]);
 
   // TODO: handle max score diff (i.e. > 5) and pass max through to scoreboard
+
   // TODO: change the board into a css grid so the cards can animate from one location
   // to another
   return (
     <Container>
+      {gameState.gameOver && (
+        <GameOverModal>
+          <h1>Game Over</h1>
+          <p>
+            Winner:{" "}
+            {gameState.opponentScore > gameState.playerScore
+              ? "Opponent"
+              : "Player"}
+          </p>
+          <button onClick={resetGame}>Reset Game</button>
+        </GameOverModal>
+      )}
       <ScoreBoardContainer>
         <ScoreBoard
           playerScore={gameState.playerScore}
@@ -296,6 +359,21 @@ const Game = () => {
 
 const Container = styled.div`
   padding: 30px;
+  position: relative;
+`;
+const GameOverModal = styled.div`
+  background: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-direction: column;
 `;
 const ScoreBoardContainer = styled.div`
   display: flex;
