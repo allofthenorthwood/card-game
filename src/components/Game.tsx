@@ -10,7 +10,10 @@ import DisplayCards from "src/components/DisplayCards";
 import DisplayHand from "src/components/DisplayHand";
 import DisplayDrawPile from "src/components/DisplayDrawPile";
 import DisplayBoardRow, { BoardRowType } from "src/components/DisplayBoardRow";
-import cardLibrary, { CardType } from "src/cardLibrary";
+import {
+  makePlaybleCardFromId as makeCard,
+  PlayableCardType,
+} from "src/cardLibrary";
 import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
 import styleVars from "src/styleVars";
@@ -20,8 +23,8 @@ function sleep(delayMs: number): Promise<void> {
 }
 
 type GameStateType = {
-  hand: Array<CardType>;
-  drawPile: Array<CardType>;
+  hand: Array<PlayableCardType>;
+  drawPile: Array<PlayableCardType>;
   playerBoard: BoardRowType;
   opponentBoard: BoardRowType;
   opponentNextCards: BoardRowType;
@@ -55,15 +58,15 @@ type ActionType =
     };
 
 // TODO: make deck for real
-const deck = [
-  { ...cardLibrary.frog },
-  { ...cardLibrary.dog },
-  { ...cardLibrary.frog },
-  { ...cardLibrary.dragon },
-  { ...cardLibrary.frog },
-  { ...cardLibrary.frog },
-  { ...cardLibrary.frog },
-  { ...cardLibrary.frog },
+const deck: Array<PlayableCardType> = [
+  makeCard("frog"),
+  makeCard("dog"),
+  makeCard("frog"),
+  makeCard("dragon"),
+  makeCard("frog"),
+  makeCard("frog"),
+  makeCard("dog"),
+  makeCard("frog"),
 ];
 
 const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
@@ -117,16 +120,16 @@ const gameStateReducer = (gameState: GameStateType, action: ActionType) => {
       const victimCard = victimCards[idx];
       if (attackerCard != null) {
         if (victimCard != null) {
-          victimCard.health -= attackerCard.attack;
-          if (victimCard.health <= 0) {
+          victimCard.card.health -= attackerCard.card.attack;
+          if (victimCard.card.health <= 0) {
             // Remove victim cards with zero health
             victimCards[idx] = null;
           }
         } else {
           if (action.attacker === "player") {
-            gameState.playerScore += attackerCard.attack;
+            gameState.playerScore += attackerCard.card.attack;
           } else {
-            gameState.opponentScore += attackerCard.attack;
+            gameState.opponentScore += attackerCard.card.attack;
           }
         }
       }
@@ -155,15 +158,15 @@ const initialGameState: GameStateType = {
   // NOTE: could make the randomness of shuffle based on a seed
   // so games are repeatable
   drawPile: _.shuffle(_.cloneDeep(deck)),
-  playerBoard: [cardLibrary.dog, null, null, null],
-  opponentBoard: [null, cardLibrary.frog, null, null],
+  playerBoard: [makeCard("dog"), null, null, null],
+  opponentBoard: [null, makeCard("frog"), null, null],
+  opponentNextCards: [makeCard("frog"), null, null, makeCard("dog")],
   playerScore: 0,
   opponentScore: 0,
   activeCardIdx: null,
   activeCardDirection: "player",
   playerTurn: true,
   canDrawCard: true,
-  opponentNextCards: [cardLibrary.frog, null, null, cardLibrary.dog],
 };
 
 const Game = () => {

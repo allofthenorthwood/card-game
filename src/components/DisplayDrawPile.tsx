@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import { cardShape, ReverseCardSlot } from "src/components/Card";
-import { CardType } from "src/cardLibrary";
+import { PlayableCardType } from "src/cardLibrary";
 import UnstyledButton from "src/components/UnstyledButton";
 
-type CardsList = Array<CardType>;
+type CardsList = Array<PlayableCardType>;
 
 const DrawPileCard = ({ offset }: { offset: number }) => {
   return (

@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import Card from "src/components/Card";
-import { CardType } from "src/cardLibrary";
+import { PlayableCardType } from "src/cardLibrary";
 
-type CardsList = Array<CardType>;
+type CardsList = Array<PlayableCardType>;
 
 const DisplayCards = ({ cards }: { cards: CardsList }) => {
   if (cards.length === 0) {
@@ -14,7 +14,7 @@ const DisplayCards = ({ cards }: { cards: CardsList }) => {
       {cards.map((card, idx) => {
         return (
           <CardWrapper key={idx}>
-            <Card {...card} />
+            <Card card={card} />
           </CardWrapper>
         );
       })}

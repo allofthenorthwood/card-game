@@ -1,12 +1,12 @@
 import styled from "styled-components";
 import Card, { cardShape } from "src/components/Card";
-import { CardType } from "src/cardLibrary";
+import { PlayableCardType } from "src/cardLibrary";
 import UnstyledButton from "src/components/UnstyledButton";
 import { useState, useRef, useLayoutEffect } from "react";
 import { useSpring, animated } from "react-spring";
 import styleVars from "src/styleVars";
 
-type CardsList = Array<CardType>;
+type CardsList = Array<PlayableCardType>;
 
 const HandCard = ({
   selected,
@@ -20,7 +20,7 @@ const HandCard = ({
   selected: boolean;
   hover: boolean;
   setHover(hovered: boolean): void;
-  card: CardType;
+  card: PlayableCardType;
   onClick(): void;
   last: boolean;
   margin: number;
@@ -43,7 +43,7 @@ const HandCard = ({
     >
       <CardSpotInner style={topProps}>
         <UnstyledButton onClick={onClick}>
-          <Card {...card} />
+          <Card card={card} />
         </UnstyledButton>
       </CardSpotInner>
     </CardSpot>

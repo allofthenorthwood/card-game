@@ -1,13 +1,14 @@
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandFist, faHeart, faPaw } from "@fortawesome/free-solid-svg-icons";
-import { CardType } from "src/cardLibrary";
+import { PlayableCardType, CardType } from "src/cardLibrary";
 import ResizeText from "src/components/ResizeText";
 import styleVars from "src/styleVars";
 
 const maxTitleSize = 20;
 
-const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
+export const RawCard = ({ card }: { card: CardType }) => {
+  const { name, icon, attack, health } = card;
   return (
     <Container>
       <Title>
@@ -34,6 +35,9 @@ const Card = ({ name, attack, health, icon }: CardType): JSX.Element => {
       </Footer>
     </Container>
   );
+};
+const Card = ({ card }: { card: PlayableCardType }) => {
+  return <RawCard card={card.card} />;
 };
 
 export const ReverseCardSlot = () => {

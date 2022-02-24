@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import Card, { cardShape, EmptyCardSlot } from "src/components/Card";
-import { CardType } from "src/cardLibrary";
+import { PlayableCardType } from "src/cardLibrary";
 import { Tuple } from "src/types";
 import UnstyledButton from "src/components/UnstyledButton";
 import { useSpring, animated, useTransition } from "react-spring";
 
-export type BoardRowType = Tuple<CardType | null, 4>;
+export type BoardRowType = Tuple<PlayableCardType | null, 4>;
 
 const DisplayBoardRow = ({
   cards,
@@ -49,7 +49,7 @@ const DisplayBoardRow = ({
             {transitions((styles, item) =>
               item ? (
                 <CardWrapper style={{ ...styles, ...cardStyles }}>
-                  <Card {...item} />
+                  <Card card={item} />
                 </CardWrapper>
               ) : playCard ? (
                 <UnstyledButton
