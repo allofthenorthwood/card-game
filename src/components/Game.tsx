@@ -17,6 +17,7 @@ import {
 import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
 import styleVars from "src/styleVars";
+import { shuffle } from "src/random";
 
 const SCORE_LIMIT = 5; // Difference in score that ends the game
 const INITIAL_HAND_SIZE = 5; // Starting number of cards in your hand
@@ -39,6 +40,7 @@ type GameStateType = {
   canDrawCard: boolean;
   gameOver: boolean;
 };
+
 // TODO: make deck for real
 const deck: Array<PlayableCardType> = [
   makeCard("frog"),
@@ -54,9 +56,7 @@ const deck: Array<PlayableCardType> = [
 const makeInitialGameState = () => {
   const init: GameStateType = {
     hand: [],
-    // NOTE: could make the randomness of shuffle based on a seed
-    // so games are repeatable
-    drawPile: _.shuffle(_.cloneDeep(deck)),
+    drawPile: shuffle(deck),
     playerBoard: [makeCard("dog"), null, null, null],
     opponentBoard: [null, makeCard("frog"), null, null],
     opponentNextCards: [makeCard("frog"), null, null, makeCard("dog")],
