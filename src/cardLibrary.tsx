@@ -9,6 +9,7 @@ import {
   faHippo,
   faFish,
   faHorse,
+  IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 
@@ -16,7 +17,7 @@ export type CardType = {
   name: string;
   health: number;
   attack: number;
-  icon?: any; //todo
+  icon?: IconDefinition;
 };
 
 export type PlayableCardType = {
