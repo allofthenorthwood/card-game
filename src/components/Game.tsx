@@ -29,6 +29,7 @@ function sleep(delayMs: number): Promise<void> {
 type GameStateType = {
   hand: Array<PlayableCardType>;
   drawPile: Array<PlayableCardType>;
+  opponentDeck: Array<PlayableCardType>;
   playerBoard: BoardRowType;
   opponentBoard: BoardRowType;
   opponentNextCards: BoardRowType;
@@ -53,10 +54,19 @@ const deck: Array<PlayableCardType> = [
   makeCard("frog"),
 ];
 
+// TODO: make opponent deck for real
+const opponentDeck: Array<PlayableCardType> = [
+  makeCard("frog"),
+  makeCard("dog"),
+  makeCard("frog"),
+  makeCard("dragon"),
+];
+
 const makeInitialGameState = () => {
   const init: GameStateType = {
     hand: [],
     drawPile: shuffle(deck),
+    opponentDeck: shuffle(opponentDeck),
     playerBoard: [makeCard("dog"), null, null, null],
     opponentBoard: [null, makeCard("frog"), null, null],
     opponentNextCards: [makeCard("frog"), null, null, makeCard("dog")],
@@ -198,6 +208,23 @@ const gameStateReducer = (
     case "start_turn": {
       gameState.playerTurn = true;
       gameState.canDrawCard = true;
+      // Add new cards from opponent's deck
+      const numCardsToAdd = 1;
+      let cardsAdded = 0;
+      let slots = _.range(0, 4);
+      slots = shuffle(slots);
+      slots.forEach((slot) => {
+        if (
+          cardsAdded < numCardsToAdd &&
+          gameState.opponentNextCards[slot] == null
+        ) {
+          const card = gameState.opponentDeck.pop();
+          if (card) {
+            gameState.opponentNextCards[slot] = card;
+            cardsAdded++;
+          }
+        }
+      });
       return gameState;
     }
     default: {
@@ -344,7 +371,7 @@ const Game = () => {
 
         <DisplayDrawPile
           drawCard={drawCard}
-          disabled={!gameState.playerTurn}
+          disabled={!gameState.playerTurn || !gameState.canDrawCard}
           cards={gameState.drawPile}
         />
       </UIRow>
