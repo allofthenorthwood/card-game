@@ -45,7 +45,7 @@ type GameStateType = {
 
 // TODO: make deck for real
 const deck: Array<PlayableCardType> = [
-  makeCard("frog"),
+  makeCard("poisonFrog"),
   makeCard("dog"),
   makeCard("frog"),
   makeCard("dragon"),
@@ -186,6 +186,12 @@ const gameStateReducer = (
         const leap = victimCard && hasSigil(victimCard, "Mighty Leap");
         // flying cards attack opponent directly, but leap cards block flying
         if (victimCard && (!flying || leap)) {
+          if (hasSigil(attackerCard, "Touch of Death")) {
+            victimCard.card.health = 0;
+          } else {
+            victimCard.card.health -= attackerCard.card.attack;
+          }
+
           if (victimCard.card.health <= 0) {
             // Remove victim cards with zero health
             victimCards[idx] = null;

@@ -13,7 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 
-type Sigil = "Airborne" | "Mighty Leap";
+type Sigil = "Airborne" | "Mighty Leap" | "Touch of Death";
 
 export const hasSigil = (card: PlayableCardType, sigil: Sigil): boolean => {
   return card.card.sigils.includes(sigil);
@@ -42,7 +42,7 @@ export const makePlayableCard = (card: CardType): PlayableCardType => {
   };
 };
 
-type CardId = "frog" | "dog" | "dragon" | "crow";
+type CardId = "frog" | "dog" | "dragon" | "crow" | "poisonFrog";
 
 export const makePlaybleCardFromId = (id: CardId) => {
   return makePlayableCard(cardLibrary[id]);
@@ -76,6 +76,13 @@ const cardLibrary: { [id in CardId]: CardType } = {
     health: 2,
     icon: faCrow,
     sigils: ["Airborne"],
+  },
+  poisonFrog: {
+    name: "Poison Frog",
+    attack: 1,
+    health: 1,
+    icon: faFrog,
+    sigils: ["Touch of Death"],
   },
 };
 
