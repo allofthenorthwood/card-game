@@ -13,6 +13,7 @@ import DisplayBoardRow, { BoardRowType } from "src/components/DisplayBoardRow";
 import {
   makePlaybleCardFromId as makeCard,
   PlayableCardType,
+  hasSigil,
 } from "src/cardLibrary";
 import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
@@ -69,7 +70,7 @@ const makeInitialGameState = () => {
     opponentDeck: shuffle(opponentDeck),
     playerBoard: [makeCard("dog"), null, null, null],
     opponentBoard: [null, makeCard("frog"), null, null],
-    opponentNextCards: [makeCard("frog"), null, null, makeCard("dog")],
+    opponentNextCards: [makeCard("frog"), null, null, makeCard("crow")],
     playerScore: 0,
     opponentScore: 0,
     activeCardIdx: null,
@@ -178,12 +179,13 @@ const gameStateReducer = (
         victimCards = gameState.playerBoard;
       }
 
-      // TODO: bifurcated strikes
       const attackerCard = attackerCards[idx];
       const victimCard = victimCards[idx];
-      if (attackerCard != null) {
-        if (victimCard != null) {
-          victimCard.card.health -= attackerCard.card.attack;
+      if (attackerCard) {
+        const flying = hasSigil(attackerCard, "Airborne");
+        const leap = victimCard && hasSigil(victimCard, "Mighty Leap");
+        // flying cards attack opponent directly, but leap cards block flying
+        if (victimCard && (!flying || leap)) {
           if (victimCard.card.health <= 0) {
             // Remove victim cards with zero health
             victimCards[idx] = null;

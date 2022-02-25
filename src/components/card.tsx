@@ -16,7 +16,7 @@ export const RawCard = ({
   healthDiff?: number;
   attackDiff?: number;
 }) => {
-  const { name, icon, attack, health } = card;
+  const { name, icon, attack, health, sigils } = card;
   return (
     <Container>
       <Title>
@@ -26,6 +26,11 @@ export const RawCard = ({
         <Icon>
           <FontAwesomeIcon icon={icon ? icon : faPaw} />
         </Icon>
+        <Sigils>
+          {sigils.map((sigil) => {
+            return <span>{sigil}</span>;
+          })}
+        </Sigils>
       </CenterPanel>
       <Footer>
         <Stat statDiff={attackDiff}>
@@ -109,6 +114,13 @@ const CenterPanel = styled.div`
   align-items: center;
   justify-content: center;
   display: flex;
+  position: relative;
+`;
+const Sigils = styled.div`
+  font-size: 10px;
+  position: absolute;
+  top: 2px;
+  left: 5px;
 `;
 const Icon = styled.div`
   font-size: 40px;
