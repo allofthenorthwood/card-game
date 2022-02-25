@@ -47,7 +47,18 @@ export const makePlayableCard = (card: CardType): PlayableCardType => {
   };
 };
 
-type CardId = "frog" | "dog" | "dragon" | "crow" | "poisonFrog";
+type CardId =
+  | "frog"
+  | "dog"
+  | "dragon"
+  | "crow"
+  | "poisonFrog"
+  | "hippo"
+  | "cat"
+  | "otter"
+  | "fish"
+  | "elk"
+  | "sparrow";
 
 export const makePlaybleCardFromId = (id: CardId) => {
   return makePlayableCard(cardLibrary[id]);
@@ -87,7 +98,49 @@ const cardLibrary: { [id in CardId]: CardType } = {
     attack: 1,
     health: 1,
     icon: faFrog,
-    sigils: ["Touch of Death"],
+    sigils: ["Touch of Death", "Mighty Leap"],
+  },
+  hippo: {
+    name: "Hippo",
+    attack: 3,
+    health: 6,
+    icon: faHippo,
+    sigils: [],
+  },
+  cat: {
+    name: "Cat",
+    attack: 0,
+    health: 1,
+    icon: faCat,
+    sigils: [],
+  },
+  sparrow: {
+    name: "Sparrow",
+    attack: 1,
+    health: 2,
+    icon: faDove,
+    sigils: ["Airborne"],
+  },
+  otter: {
+    name: "Otter",
+    attack: 1,
+    health: 1,
+    icon: faOtter,
+    sigils: [],
+  },
+  fish: {
+    name: "Salmon",
+    attack: 2,
+    health: 2,
+    icon: faFish,
+    sigils: [],
+  },
+  elk: {
+    name: "Elk",
+    attack: 2,
+    health: 4,
+    icon: faHorse,
+    sigils: [],
   },
 };
 

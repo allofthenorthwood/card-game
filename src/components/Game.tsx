@@ -52,16 +52,17 @@ const deck: Array<PlayableCardType> = [
   makeCard("dog"),
   makeCard("frog"),
   makeCard("dragon"),
-  makeCard("frog"),
-  makeCard("frog"),
-  makeCard("dog"),
-  makeCard("frog"),
+  makeCard("otter"),
+  makeCard("sparrow"),
+  makeCard("cat"),
+  makeCard("fish"),
+  makeCard("elk"),
 ];
 
 // TODO: make opponent deck for real
 const opponentDeck: Array<PlayableCardType> = [
   makeCard("frog"),
-  makeCard("dog"),
+  makeCard("crow"),
   makeCard("frog"),
   makeCard("dragon"),
 ];
@@ -71,9 +72,9 @@ const makeInitialGameState = () => {
     hand: [],
     drawPile: shuffle(deck),
     opponentDeck: shuffle(opponentDeck),
-    playerBoard: [makeCard("dog"), null, null, null],
-    opponentBoard: [null, makeCard("dog"), null, null],
-    opponentNextCards: [makeCard("dog"), null, null, makeCard("dog")],
+    playerBoard: [makeCard("dragon"), null, null, null],
+    opponentBoard: [null, makeCard("crow"), null, null],
+    opponentNextCards: [makeCard("poisonFrog"), null, null, makeCard("dog")],
     playerScore: 0,
     opponentScore: 0,
     activeCardIdx: null,
@@ -226,6 +227,7 @@ const gameStateReducer = (
         const leap = victimCard && hasSigil(victimCard, "Mighty Leap");
         // flying cards attack opponent directly, but leap cards block flying
         if (victimCard && (!flying || leap)) {
+          // TODO: overflow damage attacks cards in up next
           if (hasSigil(attackerCard, "Touch of Death")) {
             victimCard.card.health = 0;
           } else {

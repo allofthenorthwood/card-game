@@ -1,11 +1,28 @@
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandFist, faHeart, faPaw } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHandFist,
+  faHeart,
+  faPaw,
+  faRotate,
+  faArrowTurnUp,
+  faSkull,
+  faEye,
+  faFeatherPointed,
+} from "@fortawesome/free-solid-svg-icons";
 import { PlayableCardType, CardType } from "src/cardLibrary";
 import ResizeText from "src/components/ResizeText";
 import styleVars from "src/styleVars";
 
 const maxTitleSize = 20;
+
+const sigilIcons = {
+  Unkillable: faRotate,
+  "Touch of Death": faSkull,
+  Airborne: faFeatherPointed,
+  Guardian: faEye,
+  "Mighty Leap": faArrowTurnUp,
+};
 
 export const RawCard = ({
   card,
@@ -28,7 +45,13 @@ export const RawCard = ({
         </Icon>
         <Sigils>
           {sigils.map((sigil, idx) => {
-            return <span key={sigil + idx}>{sigil}</span>;
+            const icon = sigilIcons[sigil];
+
+            return (
+              <Sigil key={sigil + idx} title={sigil}>
+                {icon && <FontAwesomeIcon icon={icon} fixedWidth />}
+              </Sigil>
+            );
           })}
         </Sigils>
       </CenterPanel>
@@ -117,10 +140,18 @@ const CenterPanel = styled.div`
   position: relative;
 `;
 const Sigils = styled.div`
-  font-size: 10px;
+  font-size: 14px;
   position: absolute;
-  top: 2px;
-  left: 5px;
+  bottom: 2px;
+  left: 2px;
+  display: flex;
+`;
+const Sigil = styled.div`
+  border: 1px solid #aaa;
+  background: #fff;
+  border-radius: 3px;
+  padding: 2px;
+  margin-right: 2px;
 `;
 const Icon = styled.div`
   font-size: 40px;
