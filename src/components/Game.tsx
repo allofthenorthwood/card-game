@@ -70,8 +70,8 @@ const makeInitialGameState = () => {
     drawPile: shuffle(deck),
     opponentDeck: shuffle(opponentDeck),
     playerBoard: [makeCard("dog"), null, null, null],
-    opponentBoard: [null, makeCard("frog"), null, null],
-    opponentNextCards: [makeCard("frog"), null, null, makeCard("crow")],
+    opponentBoard: [null, makeCard("dog"), null, null],
+    opponentNextCards: [makeCard("dog"), null, null, makeCard("dog")],
     playerScore: 0,
     opponentScore: 0,
     activeCardIdx: null,
@@ -156,7 +156,21 @@ const gameStateReducer = (
       if (playable) {
         const [card] = gameState.hand.splice(handIdx, 1);
         gameState.playerBoard[boardIdx] = card;
+
+        // TODO: This needs to happen any time a card enters a new board space
+        if (gameState.opponentBoard[boardIdx] == null) {
+          // Check for Guardian cards
+          for (let i = 0; i < gameState.opponentBoard.length; i++) {
+            const c = gameState.opponentBoard[i];
+            if (c && hasSigil(c, "Guardian")) {
+              gameState.opponentBoard[i] = null;
+              gameState.opponentBoard[boardIdx] = c;
+              break;
+            }
+          }
+        }
       }
+
       return gameState;
     }
     case "attack": {

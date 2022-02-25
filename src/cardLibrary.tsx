@@ -13,7 +13,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 
-type Sigil = "Airborne" | "Mighty Leap" | "Touch of Death" | "Unkillable";
+type Sigil =
+  | "Airborne"
+  | "Mighty Leap"
+  | "Touch of Death"
+  | "Unkillable"
+  | "Guardian";
 
 export const hasSigil = (card: PlayableCardType, sigil: Sigil): boolean => {
   return card.card.sigils.includes(sigil);
@@ -61,7 +66,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     attack: 2,
     health: 3,
     icon: faDog,
-    sigils: [],
+    sigils: ["Guardian"],
   },
   dragon: {
     name: "Oroboros",
