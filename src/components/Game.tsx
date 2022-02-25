@@ -24,6 +24,8 @@ import { shuffle } from "src/random";
 const SCORE_LIMIT = 5; // Difference in score that ends the game
 const INITIAL_HAND_SIZE = 5; // Starting number of cards in your hand
 
+type DirectionType = "player" | "opponent";
+
 function sleep(delayMs: number): Promise<void> {
   return new Promise((res) => setTimeout(res, delayMs));
 }
@@ -38,7 +40,7 @@ type GameStateType = {
   playerScore: number;
   opponentScore: number;
   activeCardIdx: number | null;
-  activeCardDirection: "player" | "opponent";
+  activeCardDirection: DirectionType;
   playerTurn: boolean;
   canDrawCard: boolean;
   gameOver: boolean;
@@ -110,7 +112,7 @@ type ActionType =
   | {
       type: "attack";
       idx: number;
-      attacker: "player" | "opponent";
+      attacker: DirectionType;
     }
   | {
       type: "end_turn";
@@ -123,6 +125,46 @@ const gameStateReducer = (
   gameState: GameStateType,
   action: ActionType
 ): GameStateType => {
+  const placeCard = (
+    idx: number,
+    side: DirectionType,
+    card: PlayableCardType
+  ) => {
+    const activeSide =
+      side === "player" ? gameState.playerBoard : gameState.opponentBoard;
+    const otherSide =
+      side === "player" ? gameState.opponentBoard : gameState.playerBoard;
+
+    activeSide[idx] = card;
+
+    if (otherSide[idx] == null) {
+      // Check for Guardian cards
+      for (let i = 0; i < otherSide.length; i++) {
+        const c = otherSide[i];
+        if (c && hasSigil(c, "Guardian")) {
+          // Found a Guardian card, so move it to face the new card
+          otherSide[i] = null;
+          otherSide[idx] = c;
+          break;
+        }
+      }
+    }
+  };
+
+  const killCard = (
+    idx: number,
+    board: BoardRowType,
+    card: PlayableCardType
+  ) => {
+    // Remove victim cards with zero health
+    if (hasSigil(card, "Unkillable")) {
+      // Put a fresh copy of this card into the player's hand
+      const freshCard = makePlayableCard(card.originalCard);
+      gameState.hand.push(freshCard);
+    }
+    board[idx] = null;
+  };
+
   if (gameState.gameOver) {
     if (action.type === "reset_game") {
       return makeInitialGameState();
@@ -148,28 +190,8 @@ const gameStateReducer = (
     case "play_card": {
       const handIdx = action.handIdx;
       const boardIdx = action.boardIdx;
-      const playable =
-        handIdx >= 0 &&
-        handIdx < gameState.hand.length &&
-        boardIdx >= 0 &&
-        boardIdx < gameState.playerBoard.length;
-      if (playable) {
-        const [card] = gameState.hand.splice(handIdx, 1);
-        gameState.playerBoard[boardIdx] = card;
-
-        // TODO: This needs to happen any time a card enters a new board space
-        if (gameState.opponentBoard[boardIdx] == null) {
-          // Check for Guardian cards
-          for (let i = 0; i < gameState.opponentBoard.length; i++) {
-            const c = gameState.opponentBoard[i];
-            if (c && hasSigil(c, "Guardian")) {
-              gameState.opponentBoard[i] = null;
-              gameState.opponentBoard[boardIdx] = c;
-              break;
-            }
-          }
-        }
-      }
+      const [card] = gameState.hand.splice(handIdx, 1);
+      placeCard(boardIdx, "player", card);
 
       return gameState;
     }
@@ -184,11 +206,13 @@ const gameStateReducer = (
         victimCards = gameState.opponentBoard;
       } else {
         // Move new opponent cards onto the board
-        let newCard = gameState.opponentNextCards[idx];
         let curCard = gameState.opponentBoard[idx];
-        if (curCard == null && newCard != null) {
-          gameState.opponentBoard[idx] = newCard;
-          gameState.opponentNextCards[idx] = null;
+        if (curCard == null) {
+          let newCard = gameState.opponentNextCards[idx];
+          if (newCard) {
+            placeCard(idx, "opponent", newCard);
+            gameState.opponentNextCards[idx] = null;
+          }
         }
         attackerCards = gameState.opponentBoard;
         victimCards = gameState.playerBoard;
@@ -196,6 +220,7 @@ const gameStateReducer = (
 
       const attackerCard = attackerCards[idx];
       const victimCard = victimCards[idx];
+
       if (attackerCard) {
         const flying = hasSigil(attackerCard, "Airborne");
         const leap = victimCard && hasSigil(victimCard, "Mighty Leap");
@@ -208,16 +233,7 @@ const gameStateReducer = (
           }
 
           if (victimCard.card.health <= 0) {
-            // Remove victim cards with zero health
-            if (hasSigil(victimCard, "Unkillable")) {
-              // Put a fresh copy of this card into the player's hand
-
-              // TODO: put this code somewhere we can reuse it
-              // (e.g. sometimes the card that dies isn't the victim, like with quills)
-              const freshCard = makePlayableCard(victimCard.originalCard);
-              gameState.hand.push(freshCard);
-            }
-            victimCards[idx] = null;
+            killCard(idx, victimCards, victimCard);
           }
         } else {
           if (action.attacker === "player") {
@@ -289,7 +305,7 @@ const Game = () => {
 
   const attack = async (
     attackerCards: BoardRowType,
-    direction: "player" | "opponent"
+    direction: DirectionType
   ) => {
     for (let i = 0; i < attackerCards.length; i++) {
       dispatch({ type: "attack", idx: i, attacker: direction });
