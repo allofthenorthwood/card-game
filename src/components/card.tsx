@@ -27,8 +27,8 @@ export const RawCard = ({
           <FontAwesomeIcon icon={icon ? icon : faPaw} />
         </Icon>
         <Sigils>
-          {sigils.map((sigil) => {
-            return <span>{sigil}</span>;
+          {sigils.map((sigil, idx) => {
+            return <span key={sigil + idx}>{sigil}</span>;
           })}
         </Sigils>
       </CenterPanel>
