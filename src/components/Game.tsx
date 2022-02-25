@@ -14,6 +14,7 @@ import {
   makePlaybleCardFromId as makeCard,
   PlayableCardType,
   hasSigil,
+  makePlayableCard,
 } from "src/cardLibrary";
 import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
@@ -194,6 +195,14 @@ const gameStateReducer = (
 
           if (victimCard.card.health <= 0) {
             // Remove victim cards with zero health
+            if (hasSigil(victimCard, "Unkillable")) {
+              // Put a fresh copy of this card into the player's hand
+
+              // TODO: put this code somewhere we can reuse it
+              // (e.g. sometimes the card that dies isn't the victim, like with quills)
+              const freshCard = makePlayableCard(victimCard.originalCard);
+              gameState.hand.push(freshCard);
+            }
             victimCards[idx] = null;
           }
         } else {
