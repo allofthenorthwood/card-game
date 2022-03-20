@@ -24,6 +24,8 @@ import { shuffle } from "src/random";
 const SCORE_LIMIT = 5; // Difference in score that ends the game
 const INITIAL_HAND_SIZE = 5; // Starting number of cards in your hand
 
+const DEV = true;
+
 type DirectionType = "player" | "opponent";
 
 function sleep(delayMs: number): Promise<void> {
@@ -72,9 +74,9 @@ const makeInitialGameState = () => {
     hand: [],
     drawPile: shuffle(deck),
     opponentDeck: shuffle(opponentDeck),
-    playerBoard: [makeCard("dragon"), null, null, null],
-    opponentBoard: [null, makeCard("crow"), null, null],
-    opponentNextCards: [makeCard("poisonFrog"), null, null, makeCard("dog")],
+    playerBoard: [null, null, null, null],
+    opponentBoard: [null, null, null, null],
+    opponentNextCards: [null, null, null, null],
     playerScore: 0,
     opponentScore: 0,
     activeCardIdx: null,
@@ -83,6 +85,12 @@ const makeInitialGameState = () => {
     canDrawCard: true,
     gameOver: false,
   };
+
+  if (DEV) {
+    init.opponentNextCards = [makeCard("poisonFrog"), null, null, makeCard("dog")],
+    init.opponentBoard = [null, makeCard("crow"), null, null],
+    init.playerBoard = [makeCard("dragon"), null, null, null];
+  }
 
   const gameState = init;
   for (let i = 0; i < INITIAL_HAND_SIZE; i++) {
@@ -96,7 +104,7 @@ const makeInitialGameState = () => {
 const initialGameState: GameStateType = makeInitialGameState();
 
 type ActionType =
-  | {
+  {
       type: "reset_game";
     }
   | {
