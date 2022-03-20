@@ -9,10 +9,12 @@ import {
   faSkull,
   faEye,
   faFeatherPointed,
+  faDroplet,
 } from "@fortawesome/free-solid-svg-icons";
 import { PlayableCardType, CardType } from "src/cardLibrary";
 import ResizeText from "src/components/ResizeText";
 import styleVars from "src/styleVars";
+import _ from "lodash";
 
 const maxTitleSize = 20;
 
@@ -33,7 +35,7 @@ export const RawCard = ({
   healthDiff?: number;
   attackDiff?: number;
 }) => {
-  const { name, icon, attack, health, sigils } = card;
+  const { name, icon, attack, health, sigils, cost } = card;
   return (
     <Container>
       <Title>
@@ -43,6 +45,15 @@ export const RawCard = ({
         <Icon>
           <FontAwesomeIcon icon={icon ? icon : faPaw} />
         </Icon>
+        {cost > 0 && (
+          <Costs>
+            {_.range(cost).map((c) => (
+              <Cost key={c}>
+                <FontAwesomeIcon icon={faDroplet} />
+              </Cost>
+            ))}
+          </Costs>
+        )}
         <Sigils>
           {sigils.map((sigil, idx) => {
             const icon = sigilIcons[sigil];
@@ -139,11 +150,12 @@ const CenterPanel = styled.div`
   display: flex;
   position: relative;
 `;
+const offset = 2;
 const Sigils = styled.div`
   font-size: 14px;
   position: absolute;
-  bottom: 2px;
-  left: 2px;
+  bottom: ${offset}px;
+  left: ${offset}px;
   display: flex;
 `;
 const Sigil = styled.div`
@@ -155,6 +167,17 @@ const Sigil = styled.div`
 `;
 const Icon = styled.div`
   font-size: 40px;
+`;
+
+const Costs = styled.div`
+  position: absolute;
+  top: ${offset}px;
+  left: ${offset * 2}px;
+  display: flex;
+`;
+const Cost = styled.div`
+  padding: 1px;
+  font-size: 12px;
 `;
 
 const Footer = styled.div`

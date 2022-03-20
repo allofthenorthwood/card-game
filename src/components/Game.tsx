@@ -51,6 +51,12 @@ type GameStateType = {
 // TODO: make deck for real
 const deck: Array<PlayableCardType> = [
   makeCard("poisonFrog"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
   makeCard("dog"),
   makeCard("frog"),
   makeCard("dragon"),
@@ -87,9 +93,14 @@ const makeInitialGameState = () => {
   };
 
   if (DEV) {
-    init.opponentNextCards = [makeCard("poisonFrog"), null, null, makeCard("dog")],
-    init.opponentBoard = [null, makeCard("crow"), null, null],
-    init.playerBoard = [makeCard("dragon"), null, null, null];
+    (init.opponentNextCards = [
+      makeCard("poisonFrog"),
+      null,
+      null,
+      makeCard("dog"),
+    ]),
+      (init.opponentBoard = [null, makeCard("crow"), null, null]),
+      (init.playerBoard = [makeCard("dragon"), null, null, null]);
   }
 
   const gameState = init;
@@ -104,7 +115,7 @@ const makeInitialGameState = () => {
 const initialGameState: GameStateType = makeInitialGameState();
 
 type ActionType =
-  {
+  | {
       type: "reset_game";
     }
   | {

@@ -1,5 +1,11 @@
 ## TODO:
 
+### Bugs:
+
+- Don't animate lack of attack (e.g. attack == 0)
+
+### Features:
+
 - Card draft: alternate drawing cards from the same pool of cards
 - Fight a bunch of AIs and the boss is to fight each other
 - Animations:
@@ -12,6 +18,7 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 To set up, run
+
 ```bash
 npm install
 ```

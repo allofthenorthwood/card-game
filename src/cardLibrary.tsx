@@ -9,6 +9,7 @@ import {
   faHippo,
   faFish,
   faHorse,
+  faComputerMouse,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
@@ -28,6 +29,7 @@ export type CardType = {
   name: string;
   health: number;
   attack: number;
+  cost: number;
   icon?: IconDefinition;
   sigils: Sigil[];
 };
@@ -58,6 +60,7 @@ type CardId =
   | "otter"
   | "fish"
   | "elk"
+  | "squirrel"
   | "sparrow";
 
 export const makePlaybleCardFromId = (id: CardId) => {
@@ -69,6 +72,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Frog",
     attack: 1,
     health: 2,
+    cost: 1,
     icon: faFrog,
     sigils: ["Mighty Leap"],
   },
@@ -76,6 +80,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Watch Dog",
     attack: 2,
     health: 3,
+    cost: 2,
     icon: faDog,
     sigils: ["Guardian"],
   },
@@ -83,6 +88,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Oroboros",
     attack: 2,
     health: 2,
+    cost: 2,
     icon: faDragon,
     sigils: ["Unkillable"],
   },
@@ -90,6 +96,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Crow",
     attack: 2,
     health: 2,
+    cost: 2,
     icon: faCrow,
     sigils: ["Airborne"],
   },
@@ -97,6 +104,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Poison Frog",
     attack: 1,
     health: 1,
+    cost: 2,
     icon: faFrog,
     sigils: ["Touch of Death", "Mighty Leap"],
   },
@@ -104,6 +112,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Hippo",
     attack: 3,
     health: 6,
+    cost: 3,
     icon: faHippo,
     sigils: [],
   },
@@ -111,6 +120,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Cat",
     attack: 0,
     health: 1,
+    cost: 1,
     icon: faCat,
     sigils: [],
   },
@@ -118,6 +128,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Sparrow",
     attack: 1,
     health: 2,
+    cost: 1,
     icon: faDove,
     sigils: ["Airborne"],
   },
@@ -125,6 +136,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Otter",
     attack: 1,
     health: 1,
+    cost: 1,
     icon: faOtter,
     sigils: [],
   },
@@ -132,6 +144,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Salmon",
     attack: 2,
     health: 2,
+    cost: 1,
     icon: faFish,
     sigils: [],
   },
@@ -139,7 +152,16 @@ const cardLibrary: { [id in CardId]: CardType } = {
     name: "Elk",
     attack: 2,
     health: 4,
+    cost: 2,
     icon: faHorse,
+    sigils: [],
+  },
+  squirrel: {
+    name: "Squirrel",
+    attack: 0,
+    health: 1,
+    cost: 0,
+    icon: faComputerMouse,
     sigils: [],
   },
 };
