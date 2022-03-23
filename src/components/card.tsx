@@ -83,7 +83,7 @@ export const RawCard = ({
     </Container>
   );
 };
-const Card = ({ card }: { card: PlayableCardType }) => {
+const Card = ({ card }: { card: PlayableCardType; sacrifice?: boolean }) => {
   const attackDiff = card.card.attack - card.originalCard.attack;
   const healthDiff = card.card.health - card.originalCard.health;
   return (
@@ -107,6 +107,7 @@ const border = "2px solid #ddd";
 type ContainerProps = {
   empty?: boolean;
   reverse?: boolean;
+  sacrifice?: boolean;
 };
 
 export const cardShape = `
@@ -125,6 +126,7 @@ const Container = styled.div<ContainerProps>`
   font-size: 16px;
   border: 1px solid ${(props) => (props.empty ? "transparent" : "#999")};
   background: ${(props) => (props.empty ? "transparent" : "#f3f3f3;")};
+  color: ${(props) => (props.sacrifice ? "#555" : "#222;")};
 `;
 const ReverseContainer = styled.div`
   ${cardShape}

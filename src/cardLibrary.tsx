@@ -29,7 +29,7 @@ export type CardType = {
   name: string;
   health: number;
   attack: number;
-  cost: number;
+  cost: number; // TODO: right now this is only blood cost
   icon?: IconDefinition;
   sigils: Sigil[];
 };

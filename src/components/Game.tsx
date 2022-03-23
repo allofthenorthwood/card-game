@@ -9,12 +9,17 @@ import { faBellConcierge } from "@fortawesome/free-solid-svg-icons";
 import DisplayCards from "src/components/DisplayCards";
 import DisplayHand from "src/components/DisplayHand";
 import DisplayDrawPile from "src/components/DisplayDrawPile";
-import DisplayBoardRow, { BoardRowType } from "src/components/DisplayBoardRow";
+import DisplayBoardRow, {
+  BoardRowType,
+  BoardRowBooleanType,
+  BoardIdxType,
+} from "src/components/DisplayBoardRow";
 import {
   makePlaybleCardFromId as makeCard,
   PlayableCardType,
   hasSigil,
   makePlayableCard,
+  CardType,
 } from "src/cardLibrary";
 import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
@@ -39,22 +44,22 @@ type GameStateType = {
   playerBoard: BoardRowType;
   opponentBoard: BoardRowType;
   opponentNextCards: BoardRowType;
+  sacrificingCardIdxs: BoardRowBooleanType;
   playerScore: number;
   opponentScore: number;
-  activeCardIdx: number | null;
+  selectedCardIdx: number | null;
+  activeCardIdx: BoardIdxType | null;
   activeCardDirection: DirectionType;
   playerTurn: boolean;
+  sacrificing: boolean;
   canDrawCard: boolean;
   gameOver: boolean;
+  mustPlaceCard: boolean;
 };
 
 // TODO: make deck for real
 const deck: Array<PlayableCardType> = [
   makeCard("poisonFrog"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
   makeCard("squirrel"),
   makeCard("squirrel"),
   makeCard("dog"),
@@ -65,6 +70,10 @@ const deck: Array<PlayableCardType> = [
   makeCard("cat"),
   makeCard("fish"),
   makeCard("elk"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
+  makeCard("squirrel"),
 ];
 
 // TODO: make opponent deck for real
@@ -83,13 +92,17 @@ const makeInitialGameState = () => {
     playerBoard: [null, null, null, null],
     opponentBoard: [null, null, null, null],
     opponentNextCards: [null, null, null, null],
+    sacrificingCardIdxs: [false, false, false, false],
     playerScore: 0,
     opponentScore: 0,
+    selectedCardIdx: null,
     activeCardIdx: null,
     activeCardDirection: "player",
     playerTurn: true,
+    sacrificing: false,
     canDrawCard: true,
     gameOver: false,
+    mustPlaceCard: false,
   };
 
   if (DEV) {
@@ -116,6 +129,14 @@ const initialGameState: GameStateType = makeInitialGameState();
 
 type ActionType =
   | {
+      type: "sacrifice_card";
+      boardIdx: BoardIdxType;
+    }
+  | {
+      type: "select_card";
+      handIdx: number;
+    }
+  | {
       type: "reset_game";
     }
   | {
@@ -127,11 +148,11 @@ type ActionType =
   | {
       type: "play_card";
       handIdx: number;
-      boardIdx: number;
+      boardIdx: BoardIdxType;
     }
   | {
       type: "attack";
-      idx: number;
+      idx: BoardIdxType;
       attacker: DirectionType;
     }
   | {
@@ -156,6 +177,7 @@ const gameStateReducer = (
       side === "player" ? gameState.opponentBoard : gameState.playerBoard;
 
     activeSide[idx] = card;
+    gameState.selectedCardIdx = null;
 
     if (otherSide[idx] == null) {
       // Check for Guardian cards
@@ -171,18 +193,57 @@ const gameStateReducer = (
     }
   };
 
-  const killCard = (
-    idx: number,
-    board: BoardRowType,
-    card: PlayableCardType
-  ) => {
-    // Remove victim cards with zero health
+  const getSacrificeAmount = (card: PlayableCardType) => {
+    // TODO: support goat 3 blood sigil; don't count non-sacrifice-able cards
+    return 1;
+  };
+
+  const countPossibleSacrifices = () => {
+    let sacrificeCount = 0;
+    gameState.playerBoard.filter((card) => {
+      if (card != null) {
+        sacrificeCount += getSacrificeAmount(card);
+      }
+    });
+    return sacrificeCount;
+  };
+
+  const countCurrentSacrifices = () => {
+    let sacrificeCount = 0;
+    gameState.sacrificingCardIdxs.forEach((sacrificed, idx) => {
+      const card = gameState.playerBoard[idx];
+      if (sacrificed && card != null) {
+        sacrificeCount += getSacrificeAmount(card);
+      }
+    });
+    return sacrificeCount;
+  };
+
+  const getSacrificeCost = (handIdx: number | null) => {
+    const cardIdx = handIdx != null ? handIdx : gameState.selectedCardIdx;
+    if (cardIdx != null) {
+      if (gameState.hand[cardIdx] != null) {
+        return gameState.hand[cardIdx]?.card.cost;
+      }
+    }
+    return null;
+  };
+
+  const killCard = (idx: number, board: BoardRowType) => {
+    const card = board[idx];
+    if (!card) {
+      return;
+    }
+
     if (hasSigil(card, "Unkillable")) {
       // Put a fresh copy of this card into the player's hand
       const freshCard = makePlayableCard(card.originalCard);
       gameState.hand.push(freshCard);
     }
     board[idx] = null;
+  };
+  const clearSacrifices = (): BoardRowBooleanType => {
+    return [false, false, false, false];
   };
 
   if (gameState.gameOver) {
@@ -192,6 +253,7 @@ const gameStateReducer = (
       return gameState;
     }
   }
+
   switch (action.type) {
     case "end_game": {
       gameState.gameOver = true;
@@ -207,11 +269,80 @@ const gameStateReducer = (
       gameState.canDrawCard = false;
       return gameState;
     }
+    case "select_card": {
+      if (gameState.mustPlaceCard) {
+        return gameState;
+      }
+      if (action.handIdx === gameState.selectedCardIdx) {
+        // deselect card
+        gameState.selectedCardIdx = null;
+        gameState.sacrificing = false;
+        gameState.sacrificingCardIdxs = clearSacrifices();
+        return gameState;
+      }
+      // check if there are enough cards that your sacrifice would work
+      const cardCost = getSacrificeCost(action.handIdx);
+      if (cardCost != null && countPossibleSacrifices() >= cardCost) {
+        gameState.selectedCardIdx = action.handIdx;
+        // If this card needs sacrificing, enter that state:
+        if (cardCost > 0) {
+          gameState.sacrificing = true;
+        } else {
+          gameState.sacrificing = false;
+        }
+      } else {
+        // TODO: show error messages
+        // "You don't have enough cards to sacrifices to afford this card"
+      }
+
+      return gameState;
+    }
+    case "sacrifice_card": {
+      if (gameState.playerBoard[action.boardIdx] == null) {
+        // no card to sacrifice
+        return gameState;
+      }
+
+      if (gameState.sacrificingCardIdxs[action.boardIdx]) {
+        // deselect card for sacrifice if they click it again
+        gameState.sacrificingCardIdxs[action.boardIdx] = false;
+      } else {
+        gameState.sacrificingCardIdxs[action.boardIdx] = true;
+      }
+      const cardCost = getSacrificeCost(gameState.selectedCardIdx);
+      if (cardCost && countCurrentSacrifices() >= cardCost) {
+        gameState.sacrificingCardIdxs.forEach((cardSelected, idx) => {
+          if (cardSelected) {
+            // remove the card
+            killCard(idx, gameState.playerBoard);
+          }
+        });
+        // enter must-place-card state
+        gameState.mustPlaceCard = true;
+
+        // clear sacrifices
+        gameState.sacrificingCardIdxs = clearSacrifices();
+      }
+
+      return gameState;
+    }
     case "play_card": {
       const handIdx = action.handIdx;
       const boardIdx = action.boardIdx;
-      const [card] = gameState.hand.splice(handIdx, 1);
+      const card = gameState.hand[handIdx];
+
+      if (
+        !gameState.mustPlaceCard &&
+        card.card.cost > countCurrentSacrifices()
+      ) {
+        return gameState;
+      }
+
+      gameState.hand.splice(handIdx, 1);
       placeCard(boardIdx, "player", card);
+      gameState.mustPlaceCard = false;
+      gameState.sacrificing = false;
+      gameState.sacrificingCardIdxs = clearSacrifices();
 
       return gameState;
     }
@@ -253,8 +384,9 @@ const gameStateReducer = (
             victimCard.card.health -= attackerCard.card.attack;
           }
 
+          // Remove victim cards with zero health
           if (victimCard.card.health <= 0) {
-            killCard(idx, victimCards, victimCard);
+            killCard(idx, victimCards);
           }
         } else {
           if (action.attacker === "player") {
@@ -306,22 +438,25 @@ const Game = () => {
     gameStateReducer,
     initialGameState
   );
-  const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
   const drawCard = () => {
     dispatch({ type: "draw_card" });
   };
 
-  const playCard = (slot: number) => {
-    if (selectedCard != null) {
-      dispatch({ type: "play_card", handIdx: selectedCard, boardIdx: slot });
-      setSelectedCard(null);
+  const playCard = (slot: BoardIdxType) => {
+    if (gameState.selectedCardIdx != null) {
+      dispatch({
+        type: "play_card",
+        handIdx: gameState.selectedCardIdx,
+        boardIdx: slot,
+      });
     }
   };
   const onSelect = (cardIdx: number) => {
-    setSelectedCard(
-      selectedCard != null && selectedCard === cardIdx ? null : cardIdx
-    );
+    dispatch({
+      type: "select_card",
+      handIdx: cardIdx,
+    });
   };
 
   const attack = async (
@@ -348,6 +483,9 @@ const Game = () => {
   };
   const resetGame = () => {
     dispatch({ type: "reset_game" });
+  };
+  const sacrificeCard = (slot: BoardIdxType) => {
+    dispatch({ type: "sacrifice_card", boardIdx: slot });
   };
 
   useEffect(() => {
@@ -415,14 +553,22 @@ const Game = () => {
               ? gameState.activeCardIdx
               : null
           }
-          disabled={selectedCard == null}
+          disabled={gameState.selectedCardIdx == null}
+          sacrificingCardIdxs={gameState.sacrificingCardIdxs}
+          sacrificing={gameState.sacrificing}
+          sacrificeCard={sacrificeCard}
         />
       </Row>
 
       <UIRow>
         <EndTurnButtonWrapper>
-          <UnstyledButton onClick={ringBell} disabled={!gameState.playerTurn}>
-            <EndTurnButton>
+          <UnstyledButton
+            onClick={ringBell}
+            disabled={gameState.mustPlaceCard || !gameState.playerTurn}
+          >
+            <EndTurnButton
+              disabled={gameState.mustPlaceCard || !gameState.playerTurn}
+            >
               <EndButtonIcon>
                 <FontAwesomeIcon icon={faBellConcierge} />
               </EndButtonIcon>
@@ -433,13 +579,17 @@ const Game = () => {
 
         <DisplayHand
           cards={gameState.hand}
-          selected={selectedCard}
+          selected={gameState.selectedCardIdx}
           onSelect={onSelect}
         />
 
         <DisplayDrawPile
           drawCard={drawCard}
-          disabled={!gameState.playerTurn || !gameState.canDrawCard}
+          disabled={
+            gameState.mustPlaceCard ||
+            !gameState.playerTurn ||
+            !gameState.canDrawCard
+          }
           cards={gameState.drawPile}
         />
       </UIRow>
@@ -489,19 +639,20 @@ const EndTurnButtonWrapper = styled.div`
   justify-content: center;
 `;
 
-const EndTurnButton = styled.div`
+const EndTurnButton = styled.div<{ disabled: boolean }>`
   display: flex;
   flex-direction: column;
   border: 1px solid #999;
   border-radius: ${styleVars.buttonBorderRadius}px;
   padding: 5px 10px;
   background: #eee;
+  ${(props) => (props.disabled ? "color: #999;" : "")}
   font-size: 8px;
   line-height: 10px;
   font-weight: bold;
   text-transform: uppercase;
   &:hover {
-    background: #ddd;
+    ${(props) => (props.disabled ? "" : "background: #ddd;")}
   }
 `;
 const EndButtonIcon = styled.div`
