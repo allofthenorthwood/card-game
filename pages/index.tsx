@@ -1,11 +1,9 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import styled from "styled-components";
-import { useReducer } from "react";
-import Game from "src/components/Game";
 import dynamic from "next/dynamic";
 
-const GameWithNoSSR = dynamic(() => import("src/components/Game"), {
+const MapWithNoSSR = dynamic(() => import("src/components/Map"), {
   ssr: false,
 });
 
@@ -16,7 +14,7 @@ const Home: NextPage = () => {
         <title>Card Game</title>
         <meta name="description" content="It's a Card Game" />
       </Head>
-      <GameWithNoSSR />
+      <MapWithNoSSR />
     </Container>
   );
 };

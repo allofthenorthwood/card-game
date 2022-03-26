@@ -15,11 +15,10 @@ import DisplayBoardRow, {
   BoardIdxType,
 } from "src/components/DisplayBoardRow";
 import {
-  makePlaybleCardFromId as makeCard,
+  makePlayableCardFromId,
   PlayableCardType,
   hasSigil,
   makePlayableCard,
-  CardType,
 } from "src/cardLibrary";
 import ScoreBoard from "src/components/Scoreboard";
 import UnstyledButton from "src/components/UnstyledButton";
@@ -58,34 +57,10 @@ type GameStateType = {
   bones: number;
 };
 
-// TODO: make deck for real
-const deck: Array<PlayableCardType> = [
-  makeCard("poisonFrog"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
-  makeCard("dog"),
-  makeCard("frog"),
-  makeCard("dragon"),
-  makeCard("otter"),
-  makeCard("sparrow"),
-  makeCard("cat"),
-  makeCard("fish"),
-  makeCard("elk"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
-  makeCard("squirrel"),
-];
-
-// TODO: make opponent deck for real
-const opponentDeck: Array<PlayableCardType> = [
-  makeCard("frog"),
-  makeCard("crow"),
-  makeCard("frog"),
-  makeCard("dragon"),
-];
-
-const makeInitialGameState = () => {
+const makeInitialGameState = (
+  deck: PlayableCardType[],
+  opponentDeck: PlayableCardType[]
+) => {
   const init: GameStateType = {
     hand: [],
     drawPile: shuffle(deck),
@@ -100,7 +75,7 @@ const makeInitialGameState = () => {
     activeCardIdx: null,
     activeCardDirection: "player",
     playerTurn: true,
-    sacrificing: false,
+    sacrificing: false, // TODO: change to state enum?
     canDrawCard: true,
     gameOver: false,
     mustPlaceCard: false,
@@ -109,13 +84,13 @@ const makeInitialGameState = () => {
 
   if (DEV) {
     (init.opponentNextCards = [
-      makeCard("poisonFrog"),
+      makePlayableCardFromId("poisonFrog"),
       null,
       null,
-      makeCard("dog"),
+      makePlayableCardFromId("dog"),
     ]),
-      (init.opponentBoard = [null, makeCard("crow"), null, null]),
-      (init.playerBoard = [makeCard("dragon"), null, null, null]);
+      (init.opponentBoard = [null, makePlayableCardFromId("crow"), null, null]),
+      (init.playerBoard = [makePlayableCardFromId("dragon"), null, null, null]);
   }
 
   const gameState = init;
@@ -127,7 +102,6 @@ const makeInitialGameState = () => {
   }
   return gameState;
 };
-const initialGameState: GameStateType = makeInitialGameState();
 
 type ActionType =
   | {
@@ -140,6 +114,8 @@ type ActionType =
     }
   | {
       type: "reset_game";
+      deck: PlayableCardType[];
+      opponentDeck: PlayableCardType[];
     }
   | {
       type: "end_game";
@@ -258,7 +234,7 @@ const gameStateReducer = (
 
   if (gameState.gameOver) {
     if (action.type === "reset_game") {
-      return makeInitialGameState();
+      return makeInitialGameState(action.deck, action.opponentDeck);
     } else {
       return gameState;
     }
@@ -443,7 +419,16 @@ const gameStateReducer = (
   }
 };
 
-const Game = () => {
+type GamePropsType = {
+  deck: PlayableCardType[];
+  opponentDeck: PlayableCardType[];
+  loseGame: () => void;
+  winGame: (excess: number) => void;
+};
+
+const Game = ({ deck, opponentDeck, loseGame, winGame }: GamePropsType) => {
+  // TODO: make it so this only happens once, not on every render
+  const initialGameState = makeInitialGameState(deck, opponentDeck);
   const [gameState, dispatch] = useImmerReducer(
     gameStateReducer,
     initialGameState
@@ -475,10 +460,6 @@ const Game = () => {
   ) => {
     for (let i = 0; i < attackerCards.length; i++) {
       dispatch({ type: "attack", idx: i, attacker: direction });
-      if (gameState.gameOver) {
-        // TODO: This can't be the right way to do this
-        break;
-      }
       // TODO: Align this timer with animations:
       await sleep(500);
     }
@@ -492,7 +473,7 @@ const Game = () => {
     await dispatch({ type: "start_turn" });
   };
   const resetGame = () => {
-    dispatch({ type: "reset_game" });
+    dispatch({ type: "reset_game", deck, opponentDeck });
   };
   const sacrificeCard = (slot: BoardIdxType) => {
     dispatch({ type: "sacrifice_card", boardIdx: slot });

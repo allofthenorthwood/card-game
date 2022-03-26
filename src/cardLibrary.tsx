@@ -32,6 +32,7 @@ export type CardType = {
   cost: number; // TODO: right now this is only blood cost
   icon?: IconDefinition;
   sigils: Sigil[];
+  drawable?: boolean;
 };
 
 export type PlayableCardType = {
@@ -54,6 +55,7 @@ type CardId =
   | "dog"
   | "dragon"
   | "crow"
+  | "wolf"
   | "poisonFrog"
   | "hippo"
   | "cat"
@@ -63,7 +65,7 @@ type CardId =
   | "squirrel"
   | "sparrow";
 
-export const makePlaybleCardFromId = (id: CardId) => {
+export const makePlayableCardFromId = (id: CardId) => {
   return makePlayableCard(cardLibrary[id]);
 };
 
@@ -75,6 +77,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 1,
     icon: faFrog,
     sigils: ["Mighty Leap"],
+    drawable: true,
   },
   dog: {
     name: "Watch Dog",
@@ -83,6 +86,16 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 2,
     icon: faDog,
     sigils: ["Guardian"],
+    drawable: true,
+  },
+  wolf: {
+    name: "Wolf",
+    attack: 3,
+    health: 2,
+    cost: 2,
+    icon: faDog,
+    sigils: [],
+    drawable: true,
   },
   dragon: {
     name: "Oroboros",
@@ -99,6 +112,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 2,
     icon: faCrow,
     sigils: ["Airborne"],
+    drawable: true,
   },
   poisonFrog: {
     name: "Poison Frog",
@@ -107,6 +121,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 2,
     icon: faFrog,
     sigils: ["Touch of Death", "Mighty Leap"],
+    drawable: true,
   },
   hippo: {
     name: "Hippo",
@@ -123,6 +138,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 1,
     icon: faCat,
     sigils: [],
+    drawable: true,
   },
   sparrow: {
     name: "Sparrow",
@@ -131,6 +147,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 1,
     icon: faDove,
     sigils: ["Airborne"],
+    drawable: true,
   },
   otter: {
     name: "Otter",
@@ -139,6 +156,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 1,
     icon: faOtter,
     sigils: [],
+    drawable: true,
   },
   fish: {
     name: "Salmon",
@@ -147,6 +165,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 1,
     icon: faFish,
     sigils: [],
+    drawable: true,
   },
   elk: {
     name: "Elk",
@@ -155,6 +174,7 @@ const cardLibrary: { [id in CardId]: CardType } = {
     cost: 2,
     icon: faHorse,
     sigils: [],
+    drawable: true,
   },
   squirrel: {
     name: "Squirrel",
@@ -164,6 +184,16 @@ const cardLibrary: { [id in CardId]: CardType } = {
     icon: faComputerMouse,
     sigils: [],
   },
+};
+
+export const getDrawableCards = (): CardType[] => {
+  const cards: CardType[] = [];
+  Object.values(cardLibrary).forEach((card) => {
+    if (card.drawable) {
+      cards.push(card);
+    }
+  });
+  return cards;
 };
 
 export default cardLibrary;
