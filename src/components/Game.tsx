@@ -1,10 +1,10 @@
 import styled from "styled-components";
 import { useImmerReducer } from "use-immer";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import _ from "lodash";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBellConcierge } from "@fortawesome/free-solid-svg-icons";
+import { faBellConcierge, faBone } from "@fortawesome/free-solid-svg-icons";
 
 import DisplayCards from "src/components/DisplayCards";
 import DisplayHand from "src/components/DisplayHand";
@@ -55,6 +55,7 @@ type GameStateType = {
   canDrawCard: boolean;
   gameOver: boolean;
   mustPlaceCard: boolean;
+  bones: number;
 };
 
 // TODO: make deck for real
@@ -103,6 +104,7 @@ const makeInitialGameState = () => {
     canDrawCard: true,
     gameOver: false,
     mustPlaceCard: false,
+    bones: 0,
   };
 
   if (DEV) {
@@ -229,7 +231,11 @@ const gameStateReducer = (
     return null;
   };
 
-  const killCard = (idx: number, board: BoardRowType) => {
+  const killCard = (
+    idx: number,
+    board: BoardRowType,
+    collectBones?: boolean
+  ) => {
     const card = board[idx];
     if (!card) {
       return;
@@ -241,6 +247,10 @@ const gameStateReducer = (
       gameState.hand.push(freshCard);
     }
     board[idx] = null;
+    if (collectBones) {
+      // TODO: check for extra bones sigil
+      gameState.bones++;
+    }
   };
   const clearSacrifices = (): BoardRowBooleanType => {
     return [false, false, false, false];
@@ -314,7 +324,7 @@ const gameStateReducer = (
         gameState.sacrificingCardIdxs.forEach((cardSelected, idx) => {
           if (cardSelected) {
             // remove the card
-            killCard(idx, gameState.playerBoard);
+            killCard(idx, gameState.playerBoard, true);
           }
         });
         // enter must-place-card state
@@ -386,7 +396,7 @@ const gameStateReducer = (
 
           // Remove victim cards with zero health
           if (victimCard.card.health <= 0) {
-            killCard(idx, victimCards);
+            killCard(idx, victimCards, action.attacker !== "player");
           }
         } else {
           if (action.attacker === "player") {
@@ -575,6 +585,9 @@ const Game = () => {
               End Turn
             </EndTurnButton>
           </UnstyledButton>
+          <Bones>
+            <FontAwesomeIcon icon={faBone} /> {gameState.bones} bones
+          </Bones>
         </EndTurnButtonWrapper>
 
         <DisplayHand
@@ -637,6 +650,11 @@ const EndTurnButtonWrapper = styled.div`
   flex-grow: 0;
   padding: 10px;
   justify-content: center;
+`;
+const Bones = styled.div`
+  font-size: 12px;
+  padding: 10px 0;
+  text-align: center;
 `;
 
 const EndTurnButton = styled.div<{ disabled: boolean }>`
